@@ -1,0 +1,212 @@
+---
+title: "Fietsbereikbaarheid van grootschalige woningbouwlocaties"
+author: "Vereniging Deltametropool"
+date: last-modified
+format:
+  html:
+    code-fold: true
+    lightbox: true
+    embed-resources: true
+---
+
+```{r}
+#| label: setup
+#| output: false
+
+library(tidyverse)
+library(janitor)
+library(sf)
+library(patchwork)
+
+epsg_wgs_84 <- 4326 # WGS 84
+epsg_nl <- 28992    # Amersfoort / RD New
+
+# set European format for graphs
+scales::number_options(
+  decimal.mark = ",",
+  big.mark = ".",
+  currency.prefix = "€"
+)
+
+theme_update(text = element_text(family = "Atlas Grotesk")) # house style
+```
+
+```{r}
+#| label: import-data
+#| cache: true
+#| output: false
+
+lisa <- read_sf("data/lisa2017.parquet") # internal
+
+gwl  <- read_sf("data/GWL.gpkg") |> # internal
+  remove_empty(which = c("rows", "cols")) |>
+  remove_constant() |>
+  mutate(oid = row_number(), .before = everything())
+
+# from https://www.cbs.nl/nl-nl/dossier/nederland-regionaal/geografische-data/gegevens-per-postcode
+bevolking_pc6 <- read_sf("data/cbs_pc6_2025_v1.gpkg") |>
+  mutate(across(where(is.numeric), ~replace_values(.x, c(-99997, -99995) ~ NA))) |>
+  remove_empty("cols")
+
+nl_border <- read_sf("data/landsgrens.geojson") # internal, 2023
+```
+
+
+## Introduction
+
+The Netherlands is planning to address the housing crisis
+by building new housing, with concentrations in several large-scale locations.
+These grootschalige woningbouwlocaties must have access to jobs and amenities
+by sustainable modes of transport—public transport, bicycle, and foot—
+to ensure that they are both sustainable and livable.
+
+In this analysis, we seek to develop
+a meaningful measure of the **bicycle accessibility**
+of the grootschalige woningbouwlocaties.
+This is a difficult task because of their large-scale nature—
+as these locations are often whole new urban districts
+with associated new street infrastructure, amenities, and even jobs,
+assessments of existing cycling infrastructure give an incomplete picture.
+
+Therefore, we choose to focus our analysis on **job accessibility**,
+as employment opportunities and locations are less likely to change
+with the development of new housing,
+when compared with street infrastructure itself
+or amenities within neighborhoods.
+
+As a rudimentary approach,
+we can consider the number of jobs
+available within cycling distance of the new housing areas
+and make comparisons between them.
+
+A more advanced analysis
+could distribute hypothetical new citizens across these housing areas
+and calculate job accessibility metrics for them on an individual basis.
+
+## Existing jobs within cycling distance
+
+In the Netherlands,
+city planners [typically use](https://www.mrdh.nl/interview/potentie-fiets-woon-werkverkeer)
+7,5 km as the maximum distance cycled to work, with 15 km for e-bikes.
+We can therefore take a 7,5 km buffer around the large-scale housing areas
+as a very rough estimate of the bike-accessible employment area.[^fiets-1]
+
+[^fiets-1]: The actual area is smaller,
+because it would reflect network distance rather than crow-flies distance
+and account for the fact that not all residents live on the edge of the area.
+
+We then count the number of jobs available in these employment areas
+and normalize by the expected number of new households in 2030.
+
+```{r}
+#| label: calc-basic-buffer
+#| cache: true
+
+# constants
+dist_bike <- 7.5 # bike distance in km
+dist_ebike <- 15 # ebike distance in km
+
+# buffer housing areas
+gwl_bike_buffer <- st_buffer(gwl, dist = dist_bike * 1000)
+gwl_ebike_buffer <- st_buffer(gwl, dist = dist_ebike * 1000)
+
+# jobs per new resident
+
+lisa_banen <- lisa |>
+  select("BANEN") # heavy dataset, so first take only the needed column
+
+jobs <- gwl_bike_buffer |>
+  select(oid, ProjNAAM, TOT2030) |>
+  st_join(lisa_banen) |>
+  group_by(oid) |>
+  summarise(
+    TOT2030 = first(TOT2030),
+    banen = sum(BANEN, na.rm = T),
+    # banen_per_woning = banen / TOT2030,
+    ProjNAAM = first(ProjNAAM)
+  ) |>
+  st_join(bevolking_pc6 |> select(aantal_woningen)) |>
+  group_by(oid) |>
+  summarise(
+    ProjNAAM = first(ProjNAAM),
+    nieuwe_woningen_2030 = first(TOT2030),
+    banen = first(banen),
+    bestaande_woningen = sum(aantal_woningen, na.rm = T),
+    banen_per_nieuwe_woning = banen / nieuwe_woningen_2030,
+    banen_per_totaal_woningen = banen / (bestaande_woningen + nieuwe_woningen_2030)
+  )
+```
+
+Then, we can plot these.
+
+```{r}
+#| label: fig-map-jobs-cycling-distance-single
+#| include: false
+
+jobs |>
+  arrange(banen) |>
+  ggplot() +
+  geom_sf(aes(fill = banen), color = NA, alpha = 0.8) +
+  geom_sf(data = nl_border, fill = NA) +
+  scale_fill_viridis_c(labels = scales::label_number()) +
+  labs(
+    title = "Banen op < 7,5 km afstand van grootschalige woningbouwlocaties",
+    subtitle = "Baanbereikbaarheid met de fiets",
+    fill = "Banen"
+  ) +
+  theme_void()
+```
+
+:::{.column-page}
+```{r}
+#| label: fig-map-jobs-cycling-distance
+#| fig-width: 15
+#| fig-height: 9
+
+jobs_long <- jobs |>
+  pivot_longer(
+    cols = c(
+      banen,
+      banen_per_nieuwe_woning,
+      banen_per_totaal_woningen
+    ),
+    names_to = "group",
+    values_to = "value"
+  ) |>
+  arrange(group, value)
+
+labels <- c(
+  banen = "Banen",
+  banen_per_nieuwe_woning = "Banen per nieuwe\nwoning (2030)",
+  banen_per_totaal_woningen = "Banen per totaal aantal woningen\n(inclusief bestaande en gepland)"
+)
+
+palettes <- c(
+  banen = "viridis",
+  banen_per_nieuwe_woning = "cividis",
+  banen_per_totaal_woningen = "inferno"
+)
+
+plots <- jobs_long |>
+  group_split(group) |>
+  map(\(x) {
+    group <- x$group[1]
+    ggplot(x) +
+      geom_sf(aes(fill = value), color = NA, alpha = 0.8) +
+      geom_sf(data = nl_border, fill = NA) +
+      scale_fill_viridis_c(
+        option = palettes[[group]],
+        labels = scales::label_number()
+      ) +
+      labs(fill = labels[[group]]) +
+      theme_void()
+  })
+
+wrap_plots(plots, nrow = 1) +
+  plot_annotation(
+    title = "Banen op < 7,5 km afstand van grootschalige woningbouwlocaties",
+    subtitle = "Baanbereikbaarheid met de fiets",
+    theme = theme(plot.subtitle = element_text(face = "italic"))
+  )
+```
+:::
