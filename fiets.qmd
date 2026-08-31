@@ -16,7 +16,6 @@ format:
 library(tidyverse)
 library(janitor)
 library(sf)
-library(patchwork)
 
 epsg_wgs_84 <- 4326 # WGS 84
 epsg_nl <- 28992    # Amersfoort / RD New
@@ -139,29 +138,15 @@ jobs <- gwl_bike_buffer |>
 
 Then, we can plot these.
 
-```{r}
-#| label: fig-map-jobs-cycling-distance-single
-#| include: false
-
-jobs |>
-  arrange(banen) |>
-  ggplot() +
-  geom_sf(aes(fill = banen), color = NA, alpha = 0.8) +
-  geom_sf(data = nl_border, fill = NA) +
-  scale_fill_viridis_c(labels = scales::label_number()) +
-  labs(
-    title = "Banen op < 7,5 km afstand van grootschalige woningbouwlocaties",
-    subtitle = "Baanbereikbaarheid met de fiets",
-    fill = "Banen"
-  ) +
-  theme_void()
-```
-
 :::{.column-page}
 ```{r}
-#| label: fig-map-jobs-cycling-distance
-#| fig-width: 15
-#| fig-height: 9
+#| label: fig-map-jobs-cycling-distance2
+#| fig-cap: "Banen op < 7,5 km afstand van grootschalige woningbouwlocaties"
+#| fig-subcap:
+#|   - "Banen"
+#|   - "Banen per nieuwe woning (2030)"
+#|   - "Banen per totaal aantal woningen (inclusief bestaande en gepland)"
+#| layout-ncol: 2
 
 jobs_long <- jobs |>
   pivot_longer(
@@ -187,26 +172,26 @@ palettes <- c(
   banen_per_totaal_woningen = "inferno"
 )
 
+make_job_map <- function(data) {
+  group <- unique(data$group)
+
+  ggplot(data) +
+    geom_sf(aes(fill = value), color = NA, alpha = 0.8) +
+    geom_sf(data = nl_border, fill = NA) +
+    scale_fill_viridis_c(
+      option = palettes[[group]],
+      labels = scales::label_number()
+    ) +
+    labs(fill = labels[[group]]) +
+    theme_void()
+}
+
 plots <- jobs_long |>
   group_split(group) |>
-  map(\(x) {
-    group <- x$group[1]
-    ggplot(x) +
-      geom_sf(aes(fill = value), color = NA, alpha = 0.8) +
-      geom_sf(data = nl_border, fill = NA) +
-      scale_fill_viridis_c(
-        option = palettes[[group]],
-        labels = scales::label_number()
-      ) +
-      labs(fill = labels[[group]]) +
-      theme_void()
-  })
+  map(make_job_map)
 
-wrap_plots(plots, nrow = 1) +
-  plot_annotation(
-    title = "Banen op < 7,5 km afstand van grootschalige woningbouwlocaties",
-    subtitle = "Baanbereikbaarheid met de fiets",
-    theme = theme(plot.subtitle = element_text(face = "italic"))
-  )
+plots[[1]]
+plots[[2]]
+plots[[3]]
 ```
 :::
