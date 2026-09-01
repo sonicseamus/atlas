@@ -44,7 +44,7 @@ gwl  <- read_sf("data/GWL.gpkg") |> # internal
 
 # from https://www.cbs.nl/nl-nl/dossier/nederland-regionaal/geografische-data/gegevens-per-postcode
 bevolking_pc6 <- read_sf("data/cbs_pc6_2025_v1.gpkg") |>
-  mutate(across(where(is.numeric), ~replace_values(.x, c(-99997, -99995) ~ NA))) |>
+  mutate(across(where(is.numeric), \(x) replace_values(x, c(-99997, -99995) ~ NA))) |>
   remove_empty("cols")
 
 nl_border <- read_sf("data/landsgrens.geojson") # internal, 2023
@@ -106,24 +106,22 @@ dist_bike <- 7.5 # bike distance in km
 dist_ebike <- 15 # ebike distance in km
 
 # buffer housing areas
-gwl_bike_buffer <- st_buffer(gwl, dist = dist_bike * 1000)
+gwl_bike_buffer  <- st_buffer(gwl, dist =  dist_bike * 1000)
 gwl_ebike_buffer <- st_buffer(gwl, dist = dist_ebike * 1000)
 
 # jobs per new resident
 
-lisa_banen <- lisa |>
-  select("BANEN") # heavy dataset, so first take only the needed column
-
 jobs <- gwl_bike_buffer |>
   select(oid, ProjNAAM, TOT2030) |>
-  st_join(lisa_banen) |>
+  # first, join jobs data
+  st_join(lisa |> select("BANEN")) |>
   group_by(oid) |>
   summarise(
+    ProjNAAM = first(ProjNAAM),
     TOT2030 = first(TOT2030),
-    banen = sum(BANEN, na.rm = T),
-    # banen_per_woning = banen / TOT2030,
-    ProjNAAM = first(ProjNAAM)
+    banen = sum(BANEN, na.rm = T)
   ) |>
+  # then, join households data
   st_join(bevolking_pc6 |> select(aantal_woningen)) |>
   group_by(oid) |>
   summarise(
