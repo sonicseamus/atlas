@@ -1,5 +1,5 @@
 ---
-title: "Fietsbereikbaarheid van grootschalige woningbouwlocaties"
+title: "Bereikbaarheid van grootschalige woningbouwlocaties"
 author: "Vereniging Deltametropool"
 date: last-modified
 format:
@@ -15,19 +15,17 @@ format:
 
 library(tidyverse)
 library(janitor)
+library(fs)
 library(sf)
+library(leaflet)
+library(tidyterra)
+library(terra)
+library(maptiles)
+library(patchwork)
 
-epsg_wgs_84 <- 4326 # WGS 84
-epsg_nl <- 28992    # Amersfoort / RD New
-
-# set European format for graphs
-scales::number_options(
-  decimal.mark = ",",
-  big.mark = ".",
-  currency.prefix = "€"
-)
-
-theme_update(text = element_text(family = "Atlas Grotesk")) # house style
+epsg_wgs_84 <- 4326   # WGS 84
+epsg_web_merc <- 3857 # Web Mercator
+epsg_nl <- 28992      # Amersfoort / RD New
 ```
 
 ```{r}
@@ -47,9 +45,85 @@ bevolking_pc6 <- read_sf("data/cbs_pc6_2025_v1.gpkg") |>
   mutate(across(where(is.numeric), \(x) replace_values(x, c(-99997, -99995) ~ NA))) |>
   remove_empty("cols")
 
+# from https://www.cbs.nl/nl-nl/dossier/nederland-regionaal/geografische-data/kaart-van-500-meter-bij-500-meter-met-statistieken
+cbs500m <- read_sf("data/cbs_vk500_2025_v1.gpkg") |>
+  mutate(across(where(is.numeric), \(x) replace_values(x, c(-99997, -99995) ~ NA))) |>
+  remove_empty("cols")
+
+# internal 2018 Public Transport Accessibility Level (PTAL) dataset
+ptal <- read_sf("data/ptal2018.gpkg") |>
+  mutate(ptal = fct_rev(factor(ptal)))
+
 nl_border <- read_sf("data/landsgrens.geojson") # internal, 2023
+
+# GWL 10 and 20 km diameter circles
+circles <- read_sf("data/cirkels.gpkg")
+circles_8 <- read_sf("data/cirkels_8km.gpkg")
+
+# Basemap layers ---------------------------------------------------------------
+
+bebouwd_gebied <- read_sf(path("data", "processed", "bebouwd_gebied.gpkg"))
+natura2000_nl <- read_sf(path("data", "processed", "natura2000_nl.gpkg"))
+tent_trein <- read_sf(path("data", "processed", "tent_trein_nl_be_de.gpkg"))
+tent_weg <- read_sf(path("data", "processed", "tent_weg_nl_be_de.gpkg"))
+tent_water <- read_sf(path("data", "processed", "tent_water_nl_be_de.gpkg"))
 ```
 
+```{r}
+#| label: setup-plot-theming
+
+# set European format for graphs
+scales::number_options(
+  decimal.mark = ",",
+  big.mark = ".",
+  currency.prefix = "€"
+)
+
+theme_set(theme_minimal())
+
+use_atlas_grotesk <- TRUE # house style, set to false if not installed
+
+if (use_atlas_grotesk) {
+  font <- systemfonts::match_fonts("Atlas Grotesk Medium")
+  
+  systemfonts::register_font(
+    name = "Atlas Grotesk Medium",
+    plain = font$path
+  )
+  
+  theme_update(text = element_text(family = "Atlas Grotesk"))
+}
+
+basemap <- ggplot() +
+  geom_sf(
+    data = bebouwd_gebied,
+    fill = "#efe9e5",
+    color = NA
+  ) +
+  geom_sf(
+    data = natura2000_nl,
+    fill = "#d5dba9",
+    color = NA,
+    alpha = 0.5
+  ) +
+  geom_sf(
+    data = tent_water,
+    color = "#008eff",
+    linewidth = 0.2
+  ) +
+  geom_sf(
+    data = tent_weg,
+    color = "#922f1e",
+    linewidth = 0.1
+  ) +
+  geom_sf(
+    data = tent_trein,
+    color = "#000000",
+    linewidth = 0.1,
+    linetype = 2
+  ) +
+  theme_void()
+```
 
 ## Introduction
 
@@ -59,11 +133,13 @@ These grootschalige woningbouwlocaties must have access to jobs and amenities
 by sustainable modes of transport—public transport, bicycle, and foot—
 to ensure that they are both sustainable and livable.
 
+## Cycling
+
 In this analysis, we seek to develop
 a meaningful measure of the **bicycle accessibility**
 of the grootschalige woningbouwlocaties.
-This is a difficult task because of their large-scale nature—
-as these locations are often whole new urban districts
+This is a difficult task because of their large-scale nature—as
+these locations are often whole new urban districts
 with associated new street infrastructure, amenities, and even jobs,
 assessments of existing cycling infrastructure give an incomplete picture.
 
@@ -82,7 +158,7 @@ A more advanced analysis
 could distribute hypothetical new citizens across these housing areas
 and calculate job accessibility metrics for them on an individual basis.
 
-## Existing jobs within cycling distance
+### Existing jobs within cycling distance
 
 In the Netherlands,
 city planners [typically use](https://www.mrdh.nl/interview/potentie-fiets-woon-werkverkeer)
@@ -193,3 +269,234 @@ plots[[2]]
 plots[[3]]
 ```
 :::
+
+## Public Transport
+
+What about public transport?
+Are the large-scale housing locations accessible by train, bus, tram, and metro?
+Does the accessibility level vary within the housing area?
+Let's take a look using the public transport accesibility level (PTAL) metric.
+
+```{r}
+#| label: ptal-leaflet
+
+ptal_cbs <- cbs500m |>
+  left_join(ptal |> st_drop_geometry(), by = c("crs28992res500m" = "cbs_cell_i")) |>
+  mutate(ptal = ptal |> replace_values(NA ~ "1a"))
+
+ptal_gwl <- ptal_cbs |>
+  st_join(gwl, left = F)
+
+ptal_levels <- levels(ptal$ptal)
+
+ptal_pal <- colorFactor(
+  reverse = TRUE,
+  palette = RColorBrewer::brewer.pal(length(ptal_levels), "YlGnBu"),
+  levels = ptal_levels
+)
+
+leaflet() |>
+  # addProviderTiles(providers$Esri.WorldGrayCanvas) |>
+  addTiles(
+    urlTemplate = paste0(
+      "https://service.pdok.nl/kadaster/brt-achtergrondkaart/",
+      "wmts/v2_0/grijs/EPSG:3857/{z}/{x}/{y}.png"
+    ),
+    attribution = paste(
+      'Kaartgegevens: <a href="https://www.kadaster.nl/">',
+      'Kadaster</a> / PDOK'
+    )
+  ) |>
+  addPolygons(
+    data = ptal_gwl |> st_transform(epsg_wgs_84),
+    color = ~ ptal_pal(ptal),
+    fillColor = ~ ptal_pal(ptal),
+    opacity = 0.7,
+    fillOpacity = 0.7,
+    weight = 1,
+    popup = ~ paste0(
+      "<strong>", GWL, "</strong>", ": ", Subproject, "<br>",
+      "Woningen subproject: ", Subcapacit, "<br>",
+      "Woningen project: ", Projcapaci, "<br>",
+      "Woningen ", GWL, " 2030: ", TOT2030, "<br>",
+      "Woningen ", GWL, " 2040: ", TOT2040, "<br>"
+    )
+  ) |>
+  addPolygons(
+    data = gwl |> st_transform(epsg_wgs_84),
+    fill = FALSE,
+    color = "black",
+    weight = 1,
+    opacity = 0.5
+  ) |>
+  addLegend(
+    position = "bottomright",
+    colors = ptal_pal(ptal_levels),
+    labels = ptal_levels,
+    title = "PTAL"
+  )
+```
+
+```{r}
+#| label: fig-ptal-small-multiples
+#| fig-cap: "OV-bereikbaarheid (PTAL) van grootschalige woningbouwlocaties"
+#| fig-width: 16
+#| fig-height: 10
+
+# 1. Get Kadaster BRT basemap tiles from PDOK ----------------------------------
+brt <- create_provider(
+  name = "PDOK BRT-A",
+  url = paste0(
+    "https://service.pdok.nl/kadaster/brt-achtergrondkaart/",
+    "wmts/v2_0/grijs/EPSG:3857/{z}/{x}/{y}.png"
+  ),
+  citation = "Kaartgegevens © Kadaster (CC BY 4.0)"
+)
+
+brt_tiles <- get_tiles(
+  x = circles_8,
+  provider = brt,
+  zoom = 10,
+  project = FALSE,
+  cachedir = "data/raw/brt_z10"
+)
+
+# 2. Function make_map to plot each small multiple map -------------------------
+
+make_map <- function(zoom_area) {
+  zoom_area_merc <- zoom_area |>
+    st_transform(crs = epsg_web_merc) |>
+    st_set_agr("constant")
+  
+  bbox <- st_bbox(zoom_area_merc)
+  
+  tiles_crop <- crop(
+    brt_tiles,
+    ext(
+      bbox["xmin"], bbox["xmax"],
+      bbox["ymin"], bbox["ymax"]
+    )
+  )
+  
+  # crop to circles
+  tiles_masked <- mask(tiles_crop,mask = vect(zoom_area_merc))
+  
+  ptal_gwl_crop <- ptal_gwl |>
+    st_transform(crs = epsg_web_merc) |>
+    st_set_agr("constant") |>
+    st_intersection(zoom_area_merc)
+
+  gwl_crop <- gwl |>
+    st_transform(crs = epsg_web_merc) |>
+    st_set_agr("constant") |>
+    st_intersection(zoom_area_merc)
+
+  ggplot() +
+    geom_spatraster_rgb(data = tiles_masked) +
+    geom_sf(
+      data = ptal_gwl_crop,
+      aes(fill = ptal),
+      alpha = 0.7,
+      show.legend = TRUE
+    ) +
+    geom_sf(
+      data = gwl_crop,
+      fill = NA,
+      linewidth = 0.5
+    ) +
+    scale_fill_brewer(
+      name = "PTAL",
+      palette = "YlGnBu",
+      direction = -1,
+      drop = FALSE
+    ) +
+    coord_sf(
+      xlim = bbox[c("xmin", "xmax")],
+      ylim = bbox[c("ymin", "ymax")],
+      crs = epsg_web_merc
+    ) +
+    labs(title = zoom_area$naam) +
+    theme_void() +
+    theme(plot.title = element_text(size = 16))
+}
+
+# 3. Make all maps, facet them with patchwork, save, and plot ------------------
+
+maps <- circles_8 |>
+  split(seq_len(nrow(circles_8))) |> # need to split because of sf weirdness
+  map(make_map)
+
+p <- wrap_plots(
+  maps,
+  ncol = 7,
+  guides = "collect"
+) +
+  plot_annotation(
+    title = "OV-bereikbaarheid van grootschalige woningbouwlocaties",
+    theme = theme(
+      plot.title = element_text(
+        family = if (use_atlas_grotesk) "Atlas Grotesk Medium" else NULL,
+        size = 20)
+    )
+  ) &
+  guides(fill = guide_legend(ncol = 1)) &
+  theme(legend.position = "right")
+
+ggsave(
+  filename = "output/ptal_small_multiples_8km.png",
+  plot = p,
+  width = 16,
+  height = 10,
+  units = "in",
+)
+
+p +
+  plot_annotation(title = NULL)
+```
+
+It immediately jumps out that several locations
+have particularly poor public transport accessibility.
+The largest are in:
+
+* Flevoland (Almere, Zeewolde, and Lelystad)
+* Haarlemmermeer
+* Utrecht Rijnenburg
+* Amersfoort A1 Zone
+
+Of course, it may still be worthwhile to build housing
+in public-transport poor areas if either:
+
+1. new public transport links are planned, or
+2. the proposed housing is low-density.
+
+Or, put another way,
+we could tailor the housing density across multiple locations
+to build higher density in areas with high PTAL
+and low density in public transport-poor areas,
+while still achieving the same overall target number of units.
+
+Let's take a location-by-location look.
+
+```{r}
+#| label: fig-circle-plots-individual
+#| fig-cap: "OV-bereikbaarheid van grootschalige woningbouwlocaties rondom Den Haag"
+
+den_haag_10_km_circle <- circles[1,]
+
+bbox <- st_bbox(den_haag_10_km_circle)
+
+coords <- coord_sf(
+  xlim = bbox[c("xmin", "xmax")],
+  ylim = bbox[c("ymin", "ymax")]
+)
+
+basemap +
+  geom_sf(data = ptal_gwl, aes(fill = ptal), alpha = 0.7) +
+  geom_sf(data = gwl, fill = NA, linewidth = 0.5) +
+  scale_fill_brewer(
+    name = "PTAL",
+    palette = "YlGnBu",
+    direction = -1
+  ) +
+  coords
+```

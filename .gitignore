@@ -53,3 +53,4 @@ rsconnect/
 *.html
 data/
 *_files/
+output/
