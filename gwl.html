@@ -30492,13 +30492,13 @@ Figure 1: OV-bereikbaarheid (PTAL) van grootschalige woningbouwlocaties
 <div class="cell panel-input card bg-light p-2">
 <details class="code-fold hidden">
 <summary>Code</summary>
-<div class="sourceCode cell-code hidden" id="cb1" data-startfrom="526" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 525;"><span id="cb1-526"><a href="#cb1-526" aria-hidden="true" tabindex="-1"></a>viewof locatie <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">select</span>(</span>
-<span id="cb1-527"><a href="#cb1-527" aria-hidden="true" tabindex="-1"></a>  gwl_choices_ojs<span class="op">,</span></span>
-<span id="cb1-528"><a href="#cb1-528" aria-hidden="true" tabindex="-1"></a>  {</span>
-<span id="cb1-529"><a href="#cb1-529" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="st">&quot;Locatie:&quot;</span><span class="op">,</span></span>
-<span id="cb1-530"><a href="#cb1-530" aria-hidden="true" tabindex="-1"></a>    <span class="dt">value</span><span class="op">:</span> default_gwl_ojs</span>
-<span id="cb1-531"><a href="#cb1-531" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb1-532"><a href="#cb1-532" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code hidden" id="cb1" data-startfrom="527" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 526;"><span id="cb1-527"><a href="#cb1-527" aria-hidden="true" tabindex="-1"></a>viewof locatie <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">select</span>(</span>
+<span id="cb1-528"><a href="#cb1-528" aria-hidden="true" tabindex="-1"></a>  gwl_choices_ojs<span class="op">,</span></span>
+<span id="cb1-529"><a href="#cb1-529" aria-hidden="true" tabindex="-1"></a>  {</span>
+<span id="cb1-530"><a href="#cb1-530" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="st">&quot;Locatie:&quot;</span><span class="op">,</span></span>
+<span id="cb1-531"><a href="#cb1-531" aria-hidden="true" tabindex="-1"></a>    <span class="dt">value</span><span class="op">:</span> default_gwl_ojs</span>
+<span id="cb1-532"><a href="#cb1-532" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-533"><a href="#cb1-533" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div id="location-input" class="cell-output cell-output-display">
 <div id="ojs-cell-1" data-nodetype="declaration">
@@ -30515,45 +30515,92 @@ Figure 1: OV-bereikbaarheid (PTAL) van grootschalige woningbouwlocaties
 <div id="woning-plot" class="cell">
 <details class="code-fold hidden">
 <summary>Code</summary>
-<div class="sourceCode cell-code hidden" id="cb2" data-startfrom="614" data-source-offset="-1"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 613;"><span id="cb2-614"><a href="#cb2-614" aria-hidden="true" tabindex="-1"></a>woning_plot_data <span class="op">=</span> <span class="fu">transpose</span>(woning_data_ojs)<span class="op">.</span><span class="fu">filter</span>(d <span class="kw">=&gt;</span></span>
-<span id="cb2-615"><a href="#cb2-615" aria-hidden="true" tabindex="-1"></a>  woning_over_70k_ojs<span class="op">.</span><span class="fu">includes</span>(locatie) <span class="op">||</span></span>
-<span id="cb2-616"><a href="#cb2-616" aria-hidden="true" tabindex="-1"></a>  <span class="op">!</span>woning_over_70k_ojs<span class="op">.</span><span class="fu">includes</span>(d<span class="op">.</span><span class="at">GWL</span>)</span>
-<span id="cb2-617"><a href="#cb2-617" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-618"><a href="#cb2-618" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-619"><a href="#cb2-619" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
-<span id="cb2-620"><a href="#cb2-620" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span><span class="op">:</span> <span class="st">&quot;Woningen&quot;</span><span class="op">,</span></span>
-<span id="cb2-621"><a href="#cb2-621" aria-hidden="true" tabindex="-1"></a>  <span class="dt">height</span><span class="op">:</span> <span class="dv">270</span><span class="op">,</span></span>
-<span id="cb2-622"><a href="#cb2-622" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">125</span><span class="op">,</span></span>
-<span id="cb2-623"><a href="#cb2-623" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-624"><a href="#cb2-624" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {</span>
-<span id="cb2-625"><a href="#cb2-625" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="st">&quot;Aantal woningen&quot;</span><span class="op">,</span></span>
-<span id="cb2-626"><a href="#cb2-626" aria-hidden="true" tabindex="-1"></a>    <span class="dt">grid</span><span class="op">:</span> <span class="kw">true</span></span>
-<span id="cb2-627"><a href="#cb2-627" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
-<span id="cb2-628"><a href="#cb2-628" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-629"><a href="#cb2-629" aria-hidden="true" tabindex="-1"></a>  <span class="dt">fy</span><span class="op">:</span> {</span>
-<span id="cb2-630"><a href="#cb2-630" aria-hidden="true" tabindex="-1"></a>    <span class="dt">domain</span><span class="op">:</span> [</span>
-<span id="cb2-631"><a href="#cb2-631" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;Bestaande woningen&quot;</span><span class="op">,</span></span>
-<span id="cb2-632"><a href="#cb2-632" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;Nieuwe woningen&quot;</span><span class="op">,</span></span>
-<span id="cb2-633"><a href="#cb2-633" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;Totaal in 2030&quot;</span></span>
-<span id="cb2-634"><a href="#cb2-634" aria-hidden="true" tabindex="-1"></a>    ]<span class="op">,</span></span>
-<span id="cb2-635"><a href="#cb2-635" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="kw">null</span></span>
-<span id="cb2-636"><a href="#cb2-636" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
-<span id="cb2-637"><a href="#cb2-637" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-638"><a href="#cb2-638" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
-<span id="cb2-639"><a href="#cb2-639" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">dot</span>(</span>
-<span id="cb2-640"><a href="#cb2-640" aria-hidden="true" tabindex="-1"></a>      woning_plot_data<span class="op">,</span></span>
-<span id="cb2-641"><a href="#cb2-641" aria-hidden="true" tabindex="-1"></a>      Plot<span class="op">.</span><span class="fu">dodgeY</span>(<span class="st">&quot;middle&quot;</span><span class="op">,</span> {</span>
-<span id="cb2-642"><a href="#cb2-642" aria-hidden="true" tabindex="-1"></a>        <span class="dt">x</span><span class="op">:</span> <span class="st">&quot;woningen&quot;</span><span class="op">,</span></span>
-<span id="cb2-643"><a href="#cb2-643" aria-hidden="true" tabindex="-1"></a>        <span class="dt">fy</span><span class="op">:</span> <span class="st">&quot;type&quot;</span><span class="op">,</span></span>
-<span id="cb2-644"><a href="#cb2-644" aria-hidden="true" tabindex="-1"></a>        <span class="dt">r</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span></span>
-<span id="cb2-645"><a href="#cb2-645" aria-hidden="true" tabindex="-1"></a>        <span class="dt">fill</span><span class="op">:</span> d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">GWL</span> <span class="op">===</span> locatie</span>
-<span id="cb2-646"><a href="#cb2-646" aria-hidden="true" tabindex="-1"></a>          <span class="op">?</span> <span class="st">&quot;#E34A33&quot;</span></span>
-<span id="cb2-647"><a href="#cb2-647" aria-hidden="true" tabindex="-1"></a>          <span class="op">:</span> <span class="st">&quot;#bdbdbd&quot;</span><span class="op">,</span></span>
-<span id="cb2-648"><a href="#cb2-648" aria-hidden="true" tabindex="-1"></a>        <span class="dt">title</span><span class="op">:</span> d <span class="kw">=&gt;</span> <span class="vs">`</span><span class="sc">${</span>d<span class="op">.</span><span class="at">GWL</span><span class="sc">}</span><span class="vs">: </span><span class="sc">${</span>d<span class="op">.</span><span class="at">woningen</span><span class="op">.</span><span class="fu">toLocaleString</span>(<span class="st">&quot;nl-NL&quot;</span>)<span class="sc">}</span><span class="vs">`</span></span>
-<span id="cb2-649"><a href="#cb2-649" aria-hidden="true" tabindex="-1"></a>      })</span>
-<span id="cb2-650"><a href="#cb2-650" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb2-651"><a href="#cb2-651" aria-hidden="true" tabindex="-1"></a>  ]</span>
-<span id="cb2-652"><a href="#cb2-652" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code hidden" id="cb2" data-startfrom="615" data-source-offset="-1"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 614;"><span id="cb2-615"><a href="#cb2-615" aria-hidden="true" tabindex="-1"></a>woning_plot_data <span class="op">=</span> <span class="fu">transpose</span>(woning_data_ojs)<span class="op">.</span><span class="fu">filter</span>(d <span class="kw">=&gt;</span></span>
+<span id="cb2-616"><a href="#cb2-616" aria-hidden="true" tabindex="-1"></a>  woning_over_70k_ojs<span class="op">.</span><span class="fu">includes</span>(locatie) <span class="op">||</span></span>
+<span id="cb2-617"><a href="#cb2-617" aria-hidden="true" tabindex="-1"></a>  <span class="op">!</span>woning_over_70k_ojs<span class="op">.</span><span class="fu">includes</span>(d<span class="op">.</span><span class="at">GWL</span>)</span>
+<span id="cb2-618"><a href="#cb2-618" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-619"><a href="#cb2-619" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-620"><a href="#cb2-620" aria-hidden="true" tabindex="-1"></a>woning_caption <span class="op">=</span> {</span>
+<span id="cb2-621"><a href="#cb2-621" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> excluded <span class="op">=</span> woning_over_70k_ojs<span class="op">.</span><span class="fu">includes</span>(locatie)</span>
+<span id="cb2-622"><a href="#cb2-622" aria-hidden="true" tabindex="-1"></a>    <span class="op">?</span> []</span>
+<span id="cb2-623"><a href="#cb2-623" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span> <span class="fu">transpose</span>(woning_data_ojs)</span>
+<span id="cb2-624"><a href="#cb2-624" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span><span class="fu">filter</span>(d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">type</span> <span class="op">===</span> <span class="st">&quot;Totaal in 2030&quot;</span> <span class="op">&amp;&amp;</span> d<span class="op">.</span><span class="at">woningen</span> <span class="op">&gt;</span> <span class="dv">70000</span>)</span>
+<span id="cb2-625"><a href="#cb2-625" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span><span class="fu">map</span>(d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">GWL</span>)</span>
+<span id="cb2-626"><a href="#cb2-626" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span><span class="fu">sort</span>()<span class="op">;</span></span>
+<span id="cb2-627"><a href="#cb2-627" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-628"><a href="#cb2-628" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> excluded<span class="op">.</span><span class="at">length</span></span>
+<span id="cb2-629"><a href="#cb2-629" aria-hidden="true" tabindex="-1"></a>    <span class="op">?</span> <span class="vs">`Not shown: </span><span class="sc">${</span>excluded<span class="op">.</span><span class="fu">join</span>(<span class="st">&quot;, &quot;</span>)<span class="sc">}</span><span class="vs">`</span></span>
+<span id="cb2-630"><a href="#cb2-630" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span> <span class="st">&quot;&quot;</span><span class="op">;</span></span>
+<span id="cb2-631"><a href="#cb2-631" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-632"><a href="#cb2-632" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-633"><a href="#cb2-633" aria-hidden="true" tabindex="-1"></a>woning_values <span class="op">=</span> {</span>
+<span id="cb2-634"><a href="#cb2-634" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> values <span class="op">=</span> <span class="kw">new</span> <span class="bu">Map</span>()<span class="op">;</span></span>
+<span id="cb2-635"><a href="#cb2-635" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-636"><a href="#cb2-636" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> d <span class="kw">of</span> <span class="fu">transpose</span>(woning_data_ojs)) {</span>
+<span id="cb2-637"><a href="#cb2-637" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span>values<span class="op">.</span><span class="fu">has</span>(d<span class="op">.</span><span class="at">GWL</span>)) {</span>
+<span id="cb2-638"><a href="#cb2-638" aria-hidden="true" tabindex="-1"></a>      values<span class="op">.</span><span class="fu">set</span>(d<span class="op">.</span><span class="at">GWL</span><span class="op">,</span> {})<span class="op">;</span></span>
+<span id="cb2-639"><a href="#cb2-639" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-640"><a href="#cb2-640" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-641"><a href="#cb2-641" aria-hidden="true" tabindex="-1"></a>    values<span class="op">.</span><span class="fu">get</span>(d<span class="op">.</span><span class="at">GWL</span>)[d<span class="op">.</span><span class="at">type</span>] <span class="op">=</span> d<span class="op">.</span><span class="at">woningen</span><span class="op">;</span></span>
+<span id="cb2-642"><a href="#cb2-642" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-643"><a href="#cb2-643" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-644"><a href="#cb2-644" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> values<span class="op">;</span></span>
+<span id="cb2-645"><a href="#cb2-645" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-646"><a href="#cb2-646" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-647"><a href="#cb2-647" aria-hidden="true" tabindex="-1"></a><span class="fu">html</span><span class="vs">`</span></span>
+<span id="cb2-648"><a href="#cb2-648" aria-hidden="true" tabindex="-1"></a><span class="vs">  &lt;div&gt;</span></span>
+<span id="cb2-649"><a href="#cb2-649" aria-hidden="true" tabindex="-1"></a><span class="vs">    </span><span class="sc">${</span>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb2-650"><a href="#cb2-650" aria-hidden="true" tabindex="-1"></a>      <span class="dt">title</span><span class="op">:</span> <span class="st">&quot;Woningen&quot;</span><span class="op">,</span></span>
+<span id="cb2-651"><a href="#cb2-651" aria-hidden="true" tabindex="-1"></a>      <span class="dt">height</span><span class="op">:</span> <span class="dv">270</span><span class="op">,</span></span>
+<span id="cb2-652"><a href="#cb2-652" aria-hidden="true" tabindex="-1"></a>      <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">125</span><span class="op">,</span></span>
+<span id="cb2-653"><a href="#cb2-653" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-654"><a href="#cb2-654" aria-hidden="true" tabindex="-1"></a>      <span class="dt">x</span><span class="op">:</span> {</span>
+<span id="cb2-655"><a href="#cb2-655" aria-hidden="true" tabindex="-1"></a>        <span class="dt">label</span><span class="op">:</span> <span class="st">&quot;Aantal woningen&quot;</span><span class="op">,</span></span>
+<span id="cb2-656"><a href="#cb2-656" aria-hidden="true" tabindex="-1"></a>        <span class="dt">grid</span><span class="op">:</span> <span class="kw">true</span></span>
+<span id="cb2-657"><a href="#cb2-657" aria-hidden="true" tabindex="-1"></a>      }<span class="op">,</span></span>
+<span id="cb2-658"><a href="#cb2-658" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-659"><a href="#cb2-659" aria-hidden="true" tabindex="-1"></a>      <span class="dt">fy</span><span class="op">:</span> {</span>
+<span id="cb2-660"><a href="#cb2-660" aria-hidden="true" tabindex="-1"></a>        <span class="dt">domain</span><span class="op">:</span> [</span>
+<span id="cb2-661"><a href="#cb2-661" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;Bestaande woningen&quot;</span><span class="op">,</span></span>
+<span id="cb2-662"><a href="#cb2-662" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;Nieuwe woningen&quot;</span><span class="op">,</span></span>
+<span id="cb2-663"><a href="#cb2-663" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;Totaal in 2030&quot;</span></span>
+<span id="cb2-664"><a href="#cb2-664" aria-hidden="true" tabindex="-1"></a>        ]<span class="op">,</span></span>
+<span id="cb2-665"><a href="#cb2-665" aria-hidden="true" tabindex="-1"></a>        <span class="dt">label</span><span class="op">:</span> <span class="kw">null</span></span>
+<span id="cb2-666"><a href="#cb2-666" aria-hidden="true" tabindex="-1"></a>      }<span class="op">,</span></span>
+<span id="cb2-667"><a href="#cb2-667" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-668"><a href="#cb2-668" aria-hidden="true" tabindex="-1"></a>      <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb2-669"><a href="#cb2-669" aria-hidden="true" tabindex="-1"></a>        Plot<span class="op">.</span><span class="fu">dot</span>(</span>
+<span id="cb2-670"><a href="#cb2-670" aria-hidden="true" tabindex="-1"></a>          woning_plot_data<span class="op">,</span></span>
+<span id="cb2-671"><a href="#cb2-671" aria-hidden="true" tabindex="-1"></a>          Plot<span class="op">.</span><span class="fu">dodgeY</span>(<span class="st">&quot;middle&quot;</span><span class="op">,</span> {</span>
+<span id="cb2-672"><a href="#cb2-672" aria-hidden="true" tabindex="-1"></a>            <span class="dt">x</span><span class="op">:</span> <span class="st">&quot;woningen&quot;</span><span class="op">,</span></span>
+<span id="cb2-673"><a href="#cb2-673" aria-hidden="true" tabindex="-1"></a>            <span class="dt">fy</span><span class="op">:</span> <span class="st">&quot;type&quot;</span><span class="op">,</span></span>
+<span id="cb2-674"><a href="#cb2-674" aria-hidden="true" tabindex="-1"></a>            <span class="dt">r</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span></span>
+<span id="cb2-675"><a href="#cb2-675" aria-hidden="true" tabindex="-1"></a>            <span class="dt">fill</span><span class="op">:</span> d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">GWL</span> <span class="op">===</span> locatie</span>
+<span id="cb2-676"><a href="#cb2-676" aria-hidden="true" tabindex="-1"></a>              <span class="op">?</span> <span class="st">&quot;#E34A33&quot;</span></span>
+<span id="cb2-677"><a href="#cb2-677" aria-hidden="true" tabindex="-1"></a>              <span class="op">:</span> <span class="st">&quot;#bdbdbd&quot;</span><span class="op">,</span></span>
+<span id="cb2-678"><a href="#cb2-678" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb2-679"><a href="#cb2-679" aria-hidden="true" tabindex="-1"></a>            <span class="dt">tip</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb2-680"><a href="#cb2-680" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb2-681"><a href="#cb2-681" aria-hidden="true" tabindex="-1"></a>            <span class="dt">title</span><span class="op">:</span> d <span class="kw">=&gt;</span> {</span>
+<span id="cb2-682"><a href="#cb2-682" aria-hidden="true" tabindex="-1"></a>              <span class="kw">const</span> v <span class="op">=</span> woning_values<span class="op">.</span><span class="fu">get</span>(d<span class="op">.</span><span class="at">GWL</span>)<span class="op">;</span></span>
+<span id="cb2-683"><a href="#cb2-683" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb2-684"><a href="#cb2-684" aria-hidden="true" tabindex="-1"></a>              <span class="cf">return</span> [</span>
+<span id="cb2-685"><a href="#cb2-685" aria-hidden="true" tabindex="-1"></a>                d<span class="op">.</span><span class="at">GWL</span><span class="op">,</span></span>
+<span id="cb2-686"><a href="#cb2-686" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;&quot;</span><span class="op">,</span></span>
+<span id="cb2-687"><a href="#cb2-687" aria-hidden="true" tabindex="-1"></a>                <span class="vs">`Bestaande woningen: </span><span class="sc">${</span>v[<span class="st">&quot;Bestaande woningen&quot;</span>]<span class="op">.</span><span class="fu">toLocaleString</span>(<span class="st">&quot;nl-NL&quot;</span>)<span class="sc">}</span><span class="vs">`</span><span class="op">,</span></span>
+<span id="cb2-688"><a href="#cb2-688" aria-hidden="true" tabindex="-1"></a>                <span class="vs">`Nieuwe woningen: </span><span class="sc">${</span>v[<span class="st">&quot;Nieuwe woningen&quot;</span>]<span class="op">.</span><span class="fu">toLocaleString</span>(<span class="st">&quot;nl-NL&quot;</span>)<span class="sc">}</span><span class="vs">`</span><span class="op">,</span></span>
+<span id="cb2-689"><a href="#cb2-689" aria-hidden="true" tabindex="-1"></a>                <span class="vs">`Totaal in 2030: </span><span class="sc">${</span>v[<span class="st">&quot;Totaal in 2030&quot;</span>]<span class="op">.</span><span class="fu">toLocaleString</span>(<span class="st">&quot;nl-NL&quot;</span>)<span class="sc">}</span><span class="vs">`</span></span>
+<span id="cb2-690"><a href="#cb2-690" aria-hidden="true" tabindex="-1"></a>              ]<span class="op">.</span><span class="fu">join</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)<span class="op">;</span></span>
+<span id="cb2-691"><a href="#cb2-691" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb2-692"><a href="#cb2-692" aria-hidden="true" tabindex="-1"></a>          })</span>
+<span id="cb2-693"><a href="#cb2-693" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb2-694"><a href="#cb2-694" aria-hidden="true" tabindex="-1"></a>      ]</span>
+<span id="cb2-695"><a href="#cb2-695" aria-hidden="true" tabindex="-1"></a>    })<span class="sc">}</span></span>
+<span id="cb2-696"><a href="#cb2-696" aria-hidden="true" tabindex="-1"></a><span class="vs">    &lt;div style=&quot;font-size: 0.6em; color: #666; margin-top: 4px; text-align: right;&quot;&gt;</span></span>
+<span id="cb2-697"><a href="#cb2-697" aria-hidden="true" tabindex="-1"></a><span class="vs">      </span><span class="sc">${</span>woning_caption<span class="sc">}</span></span>
+<span id="cb2-698"><a href="#cb2-698" aria-hidden="true" tabindex="-1"></a><span class="vs">    &lt;/div&gt;</span></span>
+<span id="cb2-699"><a href="#cb2-699" aria-hidden="true" tabindex="-1"></a><span class="vs">  &lt;/div&gt;</span></span>
+<span id="cb2-700"><a href="#cb2-700" aria-hidden="true" tabindex="-1"></a><span class="vs">`</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <div id="woning-plot-1">
@@ -30564,7 +30611,21 @@ Figure 1: OV-bereikbaarheid (PTAL) van grootschalige woningbouwlocaties
 </div>
 <div class="cell-output cell-output-display">
 <div id="woning-plot-2">
-<div id="ojs-cell-2-2" data-nodetype="expression">
+<div id="ojs-cell-2-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="woning-plot-3">
+<div id="ojs-cell-2-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="woning-plot-4">
+<div id="ojs-cell-2-4" data-nodetype="expression">
 
 </div>
 </div>
@@ -30573,44 +30634,90 @@ Figure 1: OV-bereikbaarheid (PTAL) van grootschalige woningbouwlocaties
 <div id="dichtheid-plot" class="cell">
 <details class="code-fold hidden">
 <summary>Code</summary>
-<div class="sourceCode cell-code hidden" id="cb3" data-startfrom="659" data-source-offset="-1"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 658;"><span id="cb3-659"><a href="#cb3-659" aria-hidden="true" tabindex="-1"></a>dichtheid_plot_data <span class="op">=</span> <span class="fu">transpose</span>(dichtheid_data_ojs)<span class="op">.</span><span class="fu">filter</span>(d <span class="kw">=&gt;</span></span>
-<span id="cb3-660"><a href="#cb3-660" aria-hidden="true" tabindex="-1"></a>  dichtheid_over_200_ojs<span class="op">.</span><span class="fu">includes</span>(locatie) <span class="op">||</span></span>
-<span id="cb3-661"><a href="#cb3-661" aria-hidden="true" tabindex="-1"></a>  <span class="op">!</span>dichtheid_over_200_ojs<span class="op">.</span><span class="fu">includes</span>(d<span class="op">.</span><span class="at">GWL</span>)</span>
-<span id="cb3-662"><a href="#cb3-662" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-663"><a href="#cb3-663" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-664"><a href="#cb3-664" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
-<span id="cb3-665"><a href="#cb3-665" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span><span class="op">:</span> <span class="st">&quot;Woningdichtheid&quot;</span><span class="op">,</span></span>
-<span id="cb3-666"><a href="#cb3-666" aria-hidden="true" tabindex="-1"></a>  <span class="dt">height</span><span class="op">:</span> <span class="dv">200</span><span class="op">,</span></span>
-<span id="cb3-667"><a href="#cb3-667" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">125</span><span class="op">,</span></span>
-<span id="cb3-668"><a href="#cb3-668" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-669"><a href="#cb3-669" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {</span>
-<span id="cb3-670"><a href="#cb3-670" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="st">&quot;Woningen per hectare&quot;</span><span class="op">,</span></span>
-<span id="cb3-671"><a href="#cb3-671" aria-hidden="true" tabindex="-1"></a>    <span class="dt">grid</span><span class="op">:</span> <span class="kw">true</span></span>
-<span id="cb3-672"><a href="#cb3-672" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
-<span id="cb3-673"><a href="#cb3-673" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-674"><a href="#cb3-674" aria-hidden="true" tabindex="-1"></a>  <span class="dt">fy</span><span class="op">:</span> {</span>
-<span id="cb3-675"><a href="#cb3-675" aria-hidden="true" tabindex="-1"></a>    <span class="dt">domain</span><span class="op">:</span> [</span>
-<span id="cb3-676"><a href="#cb3-676" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;Bestaande woningen&quot;</span><span class="op">,</span></span>
-<span id="cb3-677"><a href="#cb3-677" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;Na opbouwen&quot;</span></span>
-<span id="cb3-678"><a href="#cb3-678" aria-hidden="true" tabindex="-1"></a>    ]<span class="op">,</span></span>
-<span id="cb3-679"><a href="#cb3-679" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="kw">null</span></span>
-<span id="cb3-680"><a href="#cb3-680" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
-<span id="cb3-681"><a href="#cb3-681" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-682"><a href="#cb3-682" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
-<span id="cb3-683"><a href="#cb3-683" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">dot</span>(</span>
-<span id="cb3-684"><a href="#cb3-684" aria-hidden="true" tabindex="-1"></a>      dichtheid_plot_data<span class="op">,</span></span>
-<span id="cb3-685"><a href="#cb3-685" aria-hidden="true" tabindex="-1"></a>      Plot<span class="op">.</span><span class="fu">dodgeY</span>(<span class="st">&quot;middle&quot;</span><span class="op">,</span> {</span>
-<span id="cb3-686"><a href="#cb3-686" aria-hidden="true" tabindex="-1"></a>        <span class="dt">x</span><span class="op">:</span> <span class="st">&quot;dichtheid&quot;</span><span class="op">,</span></span>
-<span id="cb3-687"><a href="#cb3-687" aria-hidden="true" tabindex="-1"></a>        <span class="dt">fy</span><span class="op">:</span> <span class="st">&quot;type&quot;</span><span class="op">,</span></span>
-<span id="cb3-688"><a href="#cb3-688" aria-hidden="true" tabindex="-1"></a>        <span class="dt">r</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span></span>
-<span id="cb3-689"><a href="#cb3-689" aria-hidden="true" tabindex="-1"></a>        <span class="dt">fill</span><span class="op">:</span> d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">GWL</span> <span class="op">===</span> locatie</span>
-<span id="cb3-690"><a href="#cb3-690" aria-hidden="true" tabindex="-1"></a>          <span class="op">?</span> <span class="st">&quot;#8856a7&quot;</span></span>
-<span id="cb3-691"><a href="#cb3-691" aria-hidden="true" tabindex="-1"></a>          <span class="op">:</span> <span class="st">&quot;#bdbdbd&quot;</span><span class="op">,</span></span>
-<span id="cb3-692"><a href="#cb3-692" aria-hidden="true" tabindex="-1"></a>        <span class="dt">title</span><span class="op">:</span> d <span class="kw">=&gt;</span> <span class="vs">`</span><span class="sc">${</span>d<span class="op">.</span><span class="at">GWL</span><span class="sc">}</span><span class="vs">: </span><span class="sc">${</span>d<span class="op">.</span><span class="at">dichtheid</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">1</span>)<span class="sc">}</span><span class="vs"> woningen/ha`</span></span>
-<span id="cb3-693"><a href="#cb3-693" aria-hidden="true" tabindex="-1"></a>      })</span>
-<span id="cb3-694"><a href="#cb3-694" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb3-695"><a href="#cb3-695" aria-hidden="true" tabindex="-1"></a>  ]</span>
-<span id="cb3-696"><a href="#cb3-696" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code hidden" id="cb3" data-startfrom="707" data-source-offset="-1"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 706;"><span id="cb3-707"><a href="#cb3-707" aria-hidden="true" tabindex="-1"></a>dichtheid_plot_data <span class="op">=</span> <span class="fu">transpose</span>(dichtheid_data_ojs)<span class="op">.</span><span class="fu">filter</span>(d <span class="kw">=&gt;</span></span>
+<span id="cb3-708"><a href="#cb3-708" aria-hidden="true" tabindex="-1"></a>  dichtheid_over_200_ojs<span class="op">.</span><span class="fu">includes</span>(locatie) <span class="op">||</span></span>
+<span id="cb3-709"><a href="#cb3-709" aria-hidden="true" tabindex="-1"></a>  <span class="op">!</span>dichtheid_over_200_ojs<span class="op">.</span><span class="fu">includes</span>(d<span class="op">.</span><span class="at">GWL</span>)</span>
+<span id="cb3-710"><a href="#cb3-710" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-711"><a href="#cb3-711" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-712"><a href="#cb3-712" aria-hidden="true" tabindex="-1"></a>dichtheid_caption <span class="op">=</span> {</span>
+<span id="cb3-713"><a href="#cb3-713" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> excluded <span class="op">=</span> dichtheid_over_200_ojs<span class="op">.</span><span class="fu">includes</span>(locatie)</span>
+<span id="cb3-714"><a href="#cb3-714" aria-hidden="true" tabindex="-1"></a>    <span class="op">?</span> []</span>
+<span id="cb3-715"><a href="#cb3-715" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span> <span class="fu">transpose</span>(dichtheid_data_ojs)</span>
+<span id="cb3-716"><a href="#cb3-716" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span><span class="fu">filter</span>(d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">type</span> <span class="op">===</span> <span class="st">&quot;Na opbouwen&quot;</span> <span class="op">&amp;&amp;</span> d<span class="op">.</span><span class="at">dichtheid</span> <span class="op">&gt;</span> <span class="dv">200</span>)</span>
+<span id="cb3-717"><a href="#cb3-717" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span><span class="fu">map</span>(d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">GWL</span>)</span>
+<span id="cb3-718"><a href="#cb3-718" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span><span class="fu">sort</span>()<span class="op">;</span></span>
+<span id="cb3-719"><a href="#cb3-719" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-720"><a href="#cb3-720" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> excluded<span class="op">.</span><span class="at">length</span></span>
+<span id="cb3-721"><a href="#cb3-721" aria-hidden="true" tabindex="-1"></a>    <span class="op">?</span> <span class="vs">`Not shown: </span><span class="sc">${</span>excluded<span class="op">.</span><span class="fu">join</span>(<span class="st">&quot;, &quot;</span>)<span class="sc">}</span><span class="vs">`</span></span>
+<span id="cb3-722"><a href="#cb3-722" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span> <span class="st">&quot;&quot;</span><span class="op">;</span></span>
+<span id="cb3-723"><a href="#cb3-723" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-724"><a href="#cb3-724" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-725"><a href="#cb3-725" aria-hidden="true" tabindex="-1"></a>dichtheid_values <span class="op">=</span> {</span>
+<span id="cb3-726"><a href="#cb3-726" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> values <span class="op">=</span> <span class="kw">new</span> <span class="bu">Map</span>()<span class="op">;</span></span>
+<span id="cb3-727"><a href="#cb3-727" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-728"><a href="#cb3-728" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> d <span class="kw">of</span> <span class="fu">transpose</span>(dichtheid_data_ojs)) {</span>
+<span id="cb3-729"><a href="#cb3-729" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span>values<span class="op">.</span><span class="fu">has</span>(d<span class="op">.</span><span class="at">GWL</span>)) {</span>
+<span id="cb3-730"><a href="#cb3-730" aria-hidden="true" tabindex="-1"></a>      values<span class="op">.</span><span class="fu">set</span>(d<span class="op">.</span><span class="at">GWL</span><span class="op">,</span> {})<span class="op">;</span></span>
+<span id="cb3-731"><a href="#cb3-731" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-732"><a href="#cb3-732" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-733"><a href="#cb3-733" aria-hidden="true" tabindex="-1"></a>    values<span class="op">.</span><span class="fu">get</span>(d<span class="op">.</span><span class="at">GWL</span>)[d<span class="op">.</span><span class="at">type</span>] <span class="op">=</span> d<span class="op">.</span><span class="at">dichtheid</span><span class="op">;</span></span>
+<span id="cb3-734"><a href="#cb3-734" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-735"><a href="#cb3-735" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-736"><a href="#cb3-736" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> values<span class="op">;</span></span>
+<span id="cb3-737"><a href="#cb3-737" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-738"><a href="#cb3-738" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-739"><a href="#cb3-739" aria-hidden="true" tabindex="-1"></a><span class="fu">html</span><span class="vs">`</span></span>
+<span id="cb3-740"><a href="#cb3-740" aria-hidden="true" tabindex="-1"></a><span class="vs">  &lt;div&gt;</span></span>
+<span id="cb3-741"><a href="#cb3-741" aria-hidden="true" tabindex="-1"></a><span class="vs">    </span><span class="sc">${</span>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb3-742"><a href="#cb3-742" aria-hidden="true" tabindex="-1"></a>      <span class="dt">title</span><span class="op">:</span> <span class="st">&quot;Woningdichtheid&quot;</span><span class="op">,</span></span>
+<span id="cb3-743"><a href="#cb3-743" aria-hidden="true" tabindex="-1"></a>      <span class="dt">height</span><span class="op">:</span> <span class="dv">200</span><span class="op">,</span></span>
+<span id="cb3-744"><a href="#cb3-744" aria-hidden="true" tabindex="-1"></a>      <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">125</span><span class="op">,</span></span>
+<span id="cb3-745"><a href="#cb3-745" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-746"><a href="#cb3-746" aria-hidden="true" tabindex="-1"></a>      <span class="dt">x</span><span class="op">:</span> {</span>
+<span id="cb3-747"><a href="#cb3-747" aria-hidden="true" tabindex="-1"></a>        <span class="dt">label</span><span class="op">:</span> <span class="st">&quot;Woningen per hectare&quot;</span><span class="op">,</span></span>
+<span id="cb3-748"><a href="#cb3-748" aria-hidden="true" tabindex="-1"></a>        <span class="dt">grid</span><span class="op">:</span> <span class="kw">true</span></span>
+<span id="cb3-749"><a href="#cb3-749" aria-hidden="true" tabindex="-1"></a>      }<span class="op">,</span></span>
+<span id="cb3-750"><a href="#cb3-750" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-751"><a href="#cb3-751" aria-hidden="true" tabindex="-1"></a>      <span class="dt">fy</span><span class="op">:</span> {</span>
+<span id="cb3-752"><a href="#cb3-752" aria-hidden="true" tabindex="-1"></a>        <span class="dt">domain</span><span class="op">:</span> [</span>
+<span id="cb3-753"><a href="#cb3-753" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;Bestaande woningen&quot;</span><span class="op">,</span></span>
+<span id="cb3-754"><a href="#cb3-754" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;Na opbouwen&quot;</span></span>
+<span id="cb3-755"><a href="#cb3-755" aria-hidden="true" tabindex="-1"></a>        ]<span class="op">,</span></span>
+<span id="cb3-756"><a href="#cb3-756" aria-hidden="true" tabindex="-1"></a>        <span class="dt">label</span><span class="op">:</span> <span class="kw">null</span></span>
+<span id="cb3-757"><a href="#cb3-757" aria-hidden="true" tabindex="-1"></a>      }<span class="op">,</span></span>
+<span id="cb3-758"><a href="#cb3-758" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-759"><a href="#cb3-759" aria-hidden="true" tabindex="-1"></a>      <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb3-760"><a href="#cb3-760" aria-hidden="true" tabindex="-1"></a>        Plot<span class="op">.</span><span class="fu">dot</span>(</span>
+<span id="cb3-761"><a href="#cb3-761" aria-hidden="true" tabindex="-1"></a>          dichtheid_plot_data<span class="op">,</span></span>
+<span id="cb3-762"><a href="#cb3-762" aria-hidden="true" tabindex="-1"></a>          Plot<span class="op">.</span><span class="fu">dodgeY</span>(<span class="st">&quot;middle&quot;</span><span class="op">,</span> {</span>
+<span id="cb3-763"><a href="#cb3-763" aria-hidden="true" tabindex="-1"></a>            <span class="dt">x</span><span class="op">:</span> <span class="st">&quot;dichtheid&quot;</span><span class="op">,</span></span>
+<span id="cb3-764"><a href="#cb3-764" aria-hidden="true" tabindex="-1"></a>            <span class="dt">fy</span><span class="op">:</span> <span class="st">&quot;type&quot;</span><span class="op">,</span></span>
+<span id="cb3-765"><a href="#cb3-765" aria-hidden="true" tabindex="-1"></a>            <span class="dt">r</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span></span>
+<span id="cb3-766"><a href="#cb3-766" aria-hidden="true" tabindex="-1"></a>            <span class="dt">fill</span><span class="op">:</span> d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">GWL</span> <span class="op">===</span> locatie</span>
+<span id="cb3-767"><a href="#cb3-767" aria-hidden="true" tabindex="-1"></a>              <span class="op">?</span> <span class="st">&quot;#8856a7&quot;</span></span>
+<span id="cb3-768"><a href="#cb3-768" aria-hidden="true" tabindex="-1"></a>              <span class="op">:</span> <span class="st">&quot;#bdbdbd&quot;</span><span class="op">,</span></span>
+<span id="cb3-769"><a href="#cb3-769" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb3-770"><a href="#cb3-770" aria-hidden="true" tabindex="-1"></a>            <span class="dt">tip</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb3-771"><a href="#cb3-771" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb3-772"><a href="#cb3-772" aria-hidden="true" tabindex="-1"></a>            <span class="dt">title</span><span class="op">:</span> d <span class="kw">=&gt;</span> {</span>
+<span id="cb3-773"><a href="#cb3-773" aria-hidden="true" tabindex="-1"></a>              <span class="kw">const</span> v <span class="op">=</span> dichtheid_values<span class="op">.</span><span class="fu">get</span>(d<span class="op">.</span><span class="at">GWL</span>)<span class="op">;</span></span>
+<span id="cb3-774"><a href="#cb3-774" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb3-775"><a href="#cb3-775" aria-hidden="true" tabindex="-1"></a>              <span class="cf">return</span> [</span>
+<span id="cb3-776"><a href="#cb3-776" aria-hidden="true" tabindex="-1"></a>                d<span class="op">.</span><span class="at">GWL</span><span class="op">,</span></span>
+<span id="cb3-777"><a href="#cb3-777" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;&quot;</span><span class="op">,</span></span>
+<span id="cb3-778"><a href="#cb3-778" aria-hidden="true" tabindex="-1"></a>                <span class="vs">`Bestaande: </span><span class="sc">${</span>v[<span class="st">&quot;Bestaande woningen&quot;</span>]<span class="op">.</span><span class="fu">toLocaleString</span>(<span class="st">&quot;nl-NL&quot;</span><span class="op">,</span> {     <span class="dt">maximumFractionDigits</span><span class="op">:</span> <span class="dv">0</span> })<span class="sc">}</span><span class="vs"> wo/ha`</span><span class="op">,</span></span>
+<span id="cb3-779"><a href="#cb3-779" aria-hidden="true" tabindex="-1"></a>                <span class="vs">`Na opbouwen: </span><span class="sc">${</span>v[<span class="st">&quot;Na opbouwen&quot;</span>]<span class="op">.</span><span class="fu">toLocaleString</span>(<span class="st">&quot;nl-NL&quot;</span><span class="op">,</span> { <span class="dt">maximumFractionDigits</span><span class="op">:</span> <span class="dv">0</span> })<span class="sc">}</span><span class="vs"> wo/ha`</span></span>
+<span id="cb3-780"><a href="#cb3-780" aria-hidden="true" tabindex="-1"></a>              ]<span class="op">.</span><span class="fu">join</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)<span class="op">;</span></span>
+<span id="cb3-781"><a href="#cb3-781" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb3-782"><a href="#cb3-782" aria-hidden="true" tabindex="-1"></a>          })</span>
+<span id="cb3-783"><a href="#cb3-783" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-784"><a href="#cb3-784" aria-hidden="true" tabindex="-1"></a>      ]</span>
+<span id="cb3-785"><a href="#cb3-785" aria-hidden="true" tabindex="-1"></a>    })<span class="sc">}</span></span>
+<span id="cb3-786"><a href="#cb3-786" aria-hidden="true" tabindex="-1"></a><span class="vs">    &lt;div style=&quot;font-size: 0.6em; color: #666; margin-top: 4px; text-align: right;&quot;&gt;</span></span>
+<span id="cb3-787"><a href="#cb3-787" aria-hidden="true" tabindex="-1"></a><span class="vs">      </span><span class="sc">${</span>dichtheid_caption<span class="sc">}</span></span>
+<span id="cb3-788"><a href="#cb3-788" aria-hidden="true" tabindex="-1"></a><span class="vs">    &lt;/div&gt;</span></span>
+<span id="cb3-789"><a href="#cb3-789" aria-hidden="true" tabindex="-1"></a><span class="vs">  &lt;/div&gt;</span></span>
+<span id="cb3-790"><a href="#cb3-790" aria-hidden="true" tabindex="-1"></a><span class="vs">`</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <div id="dichtheid-plot-1">
@@ -30621,7 +30728,21 @@ Figure 1: OV-bereikbaarheid (PTAL) van grootschalige woningbouwlocaties
 </div>
 <div class="cell-output cell-output-display">
 <div id="dichtheid-plot-2">
-<div id="ojs-cell-3-2" data-nodetype="expression">
+<div id="ojs-cell-3-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="dichtheid-plot-3">
+<div id="ojs-cell-3-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div id="dichtheid-plot-4">
+<div id="ojs-cell-3-4" data-nodetype="expression">
 
 </div>
 </div>
@@ -30630,24 +30751,24 @@ Figure 1: OV-bereikbaarheid (PTAL) van grootschalige woningbouwlocaties
 <div class="cell hidden">
 <details class="code-fold hidden">
 <summary>Code</summary>
-<div class="sourceCode cell-code hidden" id="cb4" data-startfrom="702" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 701;"><span id="cb4-702"><a href="#cb4-702" aria-hidden="true" tabindex="-1"></a>zoom_map <span class="op">=</span> {</span>
-<span id="cb4-703"><a href="#cb4-703" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> bbox <span class="op">=</span> <span class="fu">transpose</span>(gwl_bounds_ojs)<span class="op">.</span><span class="fu">find</span>(</span>
-<span id="cb4-704"><a href="#cb4-704" aria-hidden="true" tabindex="-1"></a>    d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">GWL</span> <span class="op">===</span> locatie</span>
-<span id="cb4-705"><a href="#cb4-705" aria-hidden="true" tabindex="-1"></a>  )<span class="op">;</span></span>
-<span id="cb4-706"><a href="#cb4-706" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-707"><a href="#cb4-707" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (bbox) {</span>
-<span id="cb4-708"><a href="#cb4-708" aria-hidden="true" tabindex="-1"></a>    <span class="bu">document</span><span class="op">.</span><span class="fu">dispatchEvent</span>(</span>
-<span id="cb4-709"><a href="#cb4-709" aria-hidden="true" tabindex="-1"></a>      <span class="kw">new</span> <span class="bu">CustomEvent</span>(<span class="st">&quot;gwl-location-change&quot;</span><span class="op">,</span> {</span>
-<span id="cb4-710"><a href="#cb4-710" aria-hidden="true" tabindex="-1"></a>        <span class="dt">detail</span><span class="op">:</span> [</span>
-<span id="cb4-711"><a href="#cb4-711" aria-hidden="true" tabindex="-1"></a>          [bbox<span class="op">.</span><span class="at">ymin</span><span class="op">,</span> bbox<span class="op">.</span><span class="at">xmin</span>]<span class="op">,</span></span>
-<span id="cb4-712"><a href="#cb4-712" aria-hidden="true" tabindex="-1"></a>          [bbox<span class="op">.</span><span class="at">ymax</span><span class="op">,</span> bbox<span class="op">.</span><span class="at">xmax</span>]</span>
-<span id="cb4-713"><a href="#cb4-713" aria-hidden="true" tabindex="-1"></a>        ]</span>
-<span id="cb4-714"><a href="#cb4-714" aria-hidden="true" tabindex="-1"></a>      })</span>
-<span id="cb4-715"><a href="#cb4-715" aria-hidden="true" tabindex="-1"></a>    )<span class="op">;</span></span>
-<span id="cb4-716"><a href="#cb4-716" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb4-717"><a href="#cb4-717" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-718"><a href="#cb4-718" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">null</span><span class="op">;</span></span>
-<span id="cb4-719"><a href="#cb4-719" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code hidden" id="cb4" data-startfrom="796" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 795;"><span id="cb4-796"><a href="#cb4-796" aria-hidden="true" tabindex="-1"></a>zoom_map <span class="op">=</span> {</span>
+<span id="cb4-797"><a href="#cb4-797" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> bbox <span class="op">=</span> <span class="fu">transpose</span>(gwl_bounds_ojs)<span class="op">.</span><span class="fu">find</span>(</span>
+<span id="cb4-798"><a href="#cb4-798" aria-hidden="true" tabindex="-1"></a>    d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">GWL</span> <span class="op">===</span> locatie</span>
+<span id="cb4-799"><a href="#cb4-799" aria-hidden="true" tabindex="-1"></a>  )<span class="op">;</span></span>
+<span id="cb4-800"><a href="#cb4-800" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-801"><a href="#cb4-801" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (bbox) {</span>
+<span id="cb4-802"><a href="#cb4-802" aria-hidden="true" tabindex="-1"></a>    <span class="bu">document</span><span class="op">.</span><span class="fu">dispatchEvent</span>(</span>
+<span id="cb4-803"><a href="#cb4-803" aria-hidden="true" tabindex="-1"></a>      <span class="kw">new</span> <span class="bu">CustomEvent</span>(<span class="st">&quot;gwl-location-change&quot;</span><span class="op">,</span> {</span>
+<span id="cb4-804"><a href="#cb4-804" aria-hidden="true" tabindex="-1"></a>        <span class="dt">detail</span><span class="op">:</span> [</span>
+<span id="cb4-805"><a href="#cb4-805" aria-hidden="true" tabindex="-1"></a>          [bbox<span class="op">.</span><span class="at">ymin</span><span class="op">,</span> bbox<span class="op">.</span><span class="at">xmin</span>]<span class="op">,</span></span>
+<span id="cb4-806"><a href="#cb4-806" aria-hidden="true" tabindex="-1"></a>          [bbox<span class="op">.</span><span class="at">ymax</span><span class="op">,</span> bbox<span class="op">.</span><span class="at">xmax</span>]</span>
+<span id="cb4-807"><a href="#cb4-807" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb4-808"><a href="#cb4-808" aria-hidden="true" tabindex="-1"></a>      })</span>
+<span id="cb4-809"><a href="#cb4-809" aria-hidden="true" tabindex="-1"></a>    )<span class="op">;</span></span>
+<span id="cb4-810"><a href="#cb4-810" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-811"><a href="#cb4-811" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-812"><a href="#cb4-812" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">null</span><span class="op">;</span></span>
+<span id="cb4-813"><a href="#cb4-813" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div id="map-zoom" class="cell-output cell-output-display hidden">
 <div id="ojs-cell-4" data-nodetype="declaration">
@@ -30735,7 +30856,7 @@ Figure 2: Banen op &lt; 7,5 km afstand van grootschalige woningbouwlocaties
 </section></div></main>
 <!-- /main column -->
 <script type="ojs-module-contents">
-eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6Ilxudmlld29mIGxvY2F0aWUgPSBJbnB1dHMuc2VsZWN0KFxuICBnd2xfY2hvaWNlc19vanMsXG4gIHtcbiAgICBsYWJlbDogXCJMb2NhdGllOlwiLFxuICAgIHZhbHVlOiBkZWZhdWx0X2d3bF9vanNcbiAgfVxuKVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC0yIiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoiXG53b25pbmdfcGxvdF9kYXRhID0gdHJhbnNwb3NlKHdvbmluZ19kYXRhX29qcykuZmlsdGVyKGQgPT5cbiAgd29uaW5nX292ZXJfNzBrX29qcy5pbmNsdWRlcyhsb2NhdGllKSB8fFxuICAhd29uaW5nX292ZXJfNzBrX29qcy5pbmNsdWRlcyhkLkdXTClcbilcblxuUGxvdC5wbG90KHtcbiAgdGl0bGU6IFwiV29uaW5nZW5cIixcbiAgaGVpZ2h0OiAyNzAsXG4gIG1hcmdpbkxlZnQ6IDEyNSxcblxuICB4OiB7XG4gICAgbGFiZWw6IFwiQWFudGFsIHdvbmluZ2VuXCIsXG4gICAgZ3JpZDogdHJ1ZVxuICB9LFxuXG4gIGZ5OiB7XG4gICAgZG9tYWluOiBbXG4gICAgICBcIkJlc3RhYW5kZSB3b25pbmdlblwiLFxuICAgICAgXCJOaWV1d2Ugd29uaW5nZW5cIixcbiAgICAgIFwiVG90YWFsIGluIDIwMzBcIlxuICAgIF0sXG4gICAgbGFiZWw6IG51bGxcbiAgfSxcblxuICBtYXJrczogW1xuICAgIFBsb3QuZG90KFxuICAgICAgd29uaW5nX3Bsb3RfZGF0YSxcbiAgICAgIFBsb3QuZG9kZ2VZKFwibWlkZGxlXCIsIHtcbiAgICAgICAgeDogXCJ3b25pbmdlblwiLFxuICAgICAgICBmeTogXCJ0eXBlXCIsXG4gICAgICAgIHI6IDMsXG4gICAgICAgIGZpbGw6IGQgPT4gZC5HV0wgPT09IGxvY2F0aWVcbiAgICAgICAgICA/IFwiI0UzNEEzM1wiXG4gICAgICAgICAgOiBcIiNiZGJkYmRcIixcbiAgICAgICAgdGl0bGU6IGQgPT4gYCR7ZC5HV0x9OiAke2Qud29uaW5nZW4udG9Mb2NhbGVTdHJpbmcoXCJubC1OTFwiKX1gXG4gICAgICB9KVxuICAgIClcbiAgXVxufSlcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMyIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6IlxuZGljaHRoZWlkX3Bsb3RfZGF0YSA9IHRyYW5zcG9zZShkaWNodGhlaWRfZGF0YV9vanMpLmZpbHRlcihkID0+XG4gIGRpY2h0aGVpZF9vdmVyXzIwMF9vanMuaW5jbHVkZXMobG9jYXRpZSkgfHxcbiAgIWRpY2h0aGVpZF9vdmVyXzIwMF9vanMuaW5jbHVkZXMoZC5HV0wpXG4pXG5cblBsb3QucGxvdCh7XG4gIHRpdGxlOiBcIldvbmluZ2RpY2h0aGVpZFwiLFxuICBoZWlnaHQ6IDIwMCxcbiAgbWFyZ2luTGVmdDogMTI1LFxuXG4gIHg6IHtcbiAgICBsYWJlbDogXCJXb25pbmdlbiBwZXIgaGVjdGFyZVwiLFxuICAgIGdyaWQ6IHRydWVcbiAgfSxcblxuICBmeToge1xuICAgIGRvbWFpbjogW1xuICAgICAgXCJCZXN0YWFuZGUgd29uaW5nZW5cIixcbiAgICAgIFwiTmEgb3Bib3V3ZW5cIlxuICAgIF0sXG4gICAgbGFiZWw6IG51bGxcbiAgfSxcblxuICBtYXJrczogW1xuICAgIFBsb3QuZG90KFxuICAgICAgZGljaHRoZWlkX3Bsb3RfZGF0YSxcbiAgICAgIFBsb3QuZG9kZ2VZKFwibWlkZGxlXCIsIHtcbiAgICAgICAgeDogXCJkaWNodGhlaWRcIixcbiAgICAgICAgZnk6IFwidHlwZVwiLFxuICAgICAgICByOiAzLFxuICAgICAgICBmaWxsOiBkID0+IGQuR1dMID09PSBsb2NhdGllXG4gICAgICAgICAgPyBcIiM4ODU2YTdcIlxuICAgICAgICAgIDogXCIjYmRiZGJkXCIsXG4gICAgICAgIHRpdGxlOiBkID0+IGAke2QuR1dMfTogJHtkLmRpY2h0aGVpZC50b0ZpeGVkKDEpfSB3b25pbmdlbi9oYWBcbiAgICAgIH0pXG4gICAgKVxuICBdXG59KVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC00IiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoiXG56b29tX21hcCA9IHtcbiAgY29uc3QgYmJveCA9IHRyYW5zcG9zZShnd2xfYm91bmRzX29qcykuZmluZChcbiAgICBkID0+IGQuR1dMID09PSBsb2NhdGllXG4gICk7XG5cbiAgaWYgKGJib3gpIHtcbiAgICBkb2N1bWVudC5kaXNwYXRjaEV2ZW50KFxuICAgICAgbmV3IEN1c3RvbUV2ZW50KFwiZ3dsLWxvY2F0aW9uLWNoYW5nZVwiLCB7XG4gICAgICAgIGRldGFpbDogW1xuICAgICAgICAgIFtiYm94LnltaW4sIGJib3gueG1pbl0sXG4gICAgICAgICAgW2Jib3gueW1heCwgYmJveC54bWF4XVxuICAgICAgICBdXG4gICAgICB9KVxuICAgICk7XG4gIH1cblxuICByZXR1cm4gbnVsbDtcbn1cbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgnbG9jYXRpZScpIn1dfQ==
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6Ilxudmlld29mIGxvY2F0aWUgPSBJbnB1dHMuc2VsZWN0KFxuICBnd2xfY2hvaWNlc19vanMsXG4gIHtcbiAgICBsYWJlbDogXCJMb2NhdGllOlwiLFxuICAgIHZhbHVlOiBkZWZhdWx0X2d3bF9vanNcbiAgfVxuKVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC0yIiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoiXG53b25pbmdfcGxvdF9kYXRhID0gdHJhbnNwb3NlKHdvbmluZ19kYXRhX29qcykuZmlsdGVyKGQgPT5cbiAgd29uaW5nX292ZXJfNzBrX29qcy5pbmNsdWRlcyhsb2NhdGllKSB8fFxuICAhd29uaW5nX292ZXJfNzBrX29qcy5pbmNsdWRlcyhkLkdXTClcbilcblxud29uaW5nX2NhcHRpb24gPSB7XG4gIGNvbnN0IGV4Y2x1ZGVkID0gd29uaW5nX292ZXJfNzBrX29qcy5pbmNsdWRlcyhsb2NhdGllKVxuICAgID8gW11cbiAgICA6IHRyYW5zcG9zZSh3b25pbmdfZGF0YV9vanMpXG4gICAgICAgIC5maWx0ZXIoZCA9PiBkLnR5cGUgPT09IFwiVG90YWFsIGluIDIwMzBcIiAmJiBkLndvbmluZ2VuID4gNzAwMDApXG4gICAgICAgIC5tYXAoZCA9PiBkLkdXTClcbiAgICAgICAgLnNvcnQoKTtcblxuICByZXR1cm4gZXhjbHVkZWQubGVuZ3RoXG4gICAgPyBgTm90IHNob3duOiAke2V4Y2x1ZGVkLmpvaW4oXCIsIFwiKX1gXG4gICAgOiBcIlwiO1xufVxuXG53b25pbmdfdmFsdWVzID0ge1xuICBjb25zdCB2YWx1ZXMgPSBuZXcgTWFwKCk7XG5cbiAgZm9yIChjb25zdCBkIG9mIHRyYW5zcG9zZSh3b25pbmdfZGF0YV9vanMpKSB7XG4gICAgaWYgKCF2YWx1ZXMuaGFzKGQuR1dMKSkge1xuICAgICAgdmFsdWVzLnNldChkLkdXTCwge30pO1xuICAgIH1cblxuICAgIHZhbHVlcy5nZXQoZC5HV0wpW2QudHlwZV0gPSBkLndvbmluZ2VuO1xuICB9XG5cbiAgcmV0dXJuIHZhbHVlcztcbn1cblxuaHRtbGBcbiAgPGRpdj5cbiAgICAke1Bsb3QucGxvdCh7XG4gICAgICB0aXRsZTogXCJXb25pbmdlblwiLFxuICAgICAgaGVpZ2h0OiAyNzAsXG4gICAgICBtYXJnaW5MZWZ0OiAxMjUsXG4gICAgXG4gICAgICB4OiB7XG4gICAgICAgIGxhYmVsOiBcIkFhbnRhbCB3b25pbmdlblwiLFxuICAgICAgICBncmlkOiB0cnVlXG4gICAgICB9LFxuICAgIFxuICAgICAgZnk6IHtcbiAgICAgICAgZG9tYWluOiBbXG4gICAgICAgICAgXCJCZXN0YWFuZGUgd29uaW5nZW5cIixcbiAgICAgICAgICBcIk5pZXV3ZSB3b25pbmdlblwiLFxuICAgICAgICAgIFwiVG90YWFsIGluIDIwMzBcIlxuICAgICAgICBdLFxuICAgICAgICBsYWJlbDogbnVsbFxuICAgICAgfSxcbiAgICBcbiAgICAgIG1hcmtzOiBbXG4gICAgICAgIFBsb3QuZG90KFxuICAgICAgICAgIHdvbmluZ19wbG90X2RhdGEsXG4gICAgICAgICAgUGxvdC5kb2RnZVkoXCJtaWRkbGVcIiwge1xuICAgICAgICAgICAgeDogXCJ3b25pbmdlblwiLFxuICAgICAgICAgICAgZnk6IFwidHlwZVwiLFxuICAgICAgICAgICAgcjogMyxcbiAgICAgICAgICAgIGZpbGw6IGQgPT4gZC5HV0wgPT09IGxvY2F0aWVcbiAgICAgICAgICAgICAgPyBcIiNFMzRBMzNcIlxuICAgICAgICAgICAgICA6IFwiI2JkYmRiZFwiLFxuICAgICAgICBcbiAgICAgICAgICAgIHRpcDogdHJ1ZSxcbiAgICAgICAgXG4gICAgICAgICAgICB0aXRsZTogZCA9PiB7XG4gICAgICAgICAgICAgIGNvbnN0IHYgPSB3b25pbmdfdmFsdWVzLmdldChkLkdXTCk7XG4gICAgICAgIFxuICAgICAgICAgICAgICByZXR1cm4gW1xuICAgICAgICAgICAgICAgIGQuR1dMLFxuICAgICAgICAgICAgICAgIFwiXCIsXG4gICAgICAgICAgICAgICAgYEJlc3RhYW5kZSB3b25pbmdlbjogJHt2W1wiQmVzdGFhbmRlIHdvbmluZ2VuXCJdLnRvTG9jYWxlU3RyaW5nKFwibmwtTkxcIil9YCxcbiAgICAgICAgICAgICAgICBgTmlldXdlIHdvbmluZ2VuOiAke3ZbXCJOaWV1d2Ugd29uaW5nZW5cIl0udG9Mb2NhbGVTdHJpbmcoXCJubC1OTFwiKX1gLFxuICAgICAgICAgICAgICAgIGBUb3RhYWwgaW4gMjAzMDogJHt2W1wiVG90YWFsIGluIDIwMzBcIl0udG9Mb2NhbGVTdHJpbmcoXCJubC1OTFwiKX1gXG4gICAgICAgICAgICAgIF0uam9pbihcIlxcblwiKTtcbiAgICAgICAgICAgIH1cbiAgICAgICAgICB9KVxuICAgICAgICApXG4gICAgICBdXG4gICAgfSl9XG4gICAgPGRpdiBzdHlsZT1cImZvbnQtc2l6ZTogMC42ZW07IGNvbG9yOiAjNjY2OyBtYXJnaW4tdG9wOiA0cHg7IHRleHQtYWxpZ246IHJpZ2h0O1wiPlxuICAgICAgJHt3b25pbmdfY2FwdGlvbn1cbiAgICA8L2Rpdj5cbiAgPC9kaXY+XG5gXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTMiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJcbmRpY2h0aGVpZF9wbG90X2RhdGEgPSB0cmFuc3Bvc2UoZGljaHRoZWlkX2RhdGFfb2pzKS5maWx0ZXIoZCA9PlxuICBkaWNodGhlaWRfb3Zlcl8yMDBfb2pzLmluY2x1ZGVzKGxvY2F0aWUpIHx8XG4gICFkaWNodGhlaWRfb3Zlcl8yMDBfb2pzLmluY2x1ZGVzKGQuR1dMKVxuKVxuXG5kaWNodGhlaWRfY2FwdGlvbiA9IHtcbiAgY29uc3QgZXhjbHVkZWQgPSBkaWNodGhlaWRfb3Zlcl8yMDBfb2pzLmluY2x1ZGVzKGxvY2F0aWUpXG4gICAgPyBbXVxuICAgIDogdHJhbnNwb3NlKGRpY2h0aGVpZF9kYXRhX29qcylcbiAgICAgICAgLmZpbHRlcihkID0+IGQudHlwZSA9PT0gXCJOYSBvcGJvdXdlblwiICYmIGQuZGljaHRoZWlkID4gMjAwKVxuICAgICAgICAubWFwKGQgPT4gZC5HV0wpXG4gICAgICAgIC5zb3J0KCk7XG5cbiAgcmV0dXJuIGV4Y2x1ZGVkLmxlbmd0aFxuICAgID8gYE5vdCBzaG93bjogJHtleGNsdWRlZC5qb2luKFwiLCBcIil9YFxuICAgIDogXCJcIjtcbn1cblxuZGljaHRoZWlkX3ZhbHVlcyA9IHtcbiAgY29uc3QgdmFsdWVzID0gbmV3IE1hcCgpO1xuXG4gIGZvciAoY29uc3QgZCBvZiB0cmFuc3Bvc2UoZGljaHRoZWlkX2RhdGFfb2pzKSkge1xuICAgIGlmICghdmFsdWVzLmhhcyhkLkdXTCkpIHtcbiAgICAgIHZhbHVlcy5zZXQoZC5HV0wsIHt9KTtcbiAgICB9XG5cbiAgICB2YWx1ZXMuZ2V0KGQuR1dMKVtkLnR5cGVdID0gZC5kaWNodGhlaWQ7XG4gIH1cblxuICByZXR1cm4gdmFsdWVzO1xufVxuXG5odG1sYFxuICA8ZGl2PlxuICAgICR7UGxvdC5wbG90KHtcbiAgICAgIHRpdGxlOiBcIldvbmluZ2RpY2h0aGVpZFwiLFxuICAgICAgaGVpZ2h0OiAyMDAsXG4gICAgICBtYXJnaW5MZWZ0OiAxMjUsXG4gICAgXG4gICAgICB4OiB7XG4gICAgICAgIGxhYmVsOiBcIldvbmluZ2VuIHBlciBoZWN0YXJlXCIsXG4gICAgICAgIGdyaWQ6IHRydWVcbiAgICAgIH0sXG4gICAgXG4gICAgICBmeToge1xuICAgICAgICBkb21haW46IFtcbiAgICAgICAgICBcIkJlc3RhYW5kZSB3b25pbmdlblwiLFxuICAgICAgICAgIFwiTmEgb3Bib3V3ZW5cIlxuICAgICAgICBdLFxuICAgICAgICBsYWJlbDogbnVsbFxuICAgICAgfSxcbiAgICBcbiAgICAgIG1hcmtzOiBbXG4gICAgICAgIFBsb3QuZG90KFxuICAgICAgICAgIGRpY2h0aGVpZF9wbG90X2RhdGEsXG4gICAgICAgICAgUGxvdC5kb2RnZVkoXCJtaWRkbGVcIiwge1xuICAgICAgICAgICAgeDogXCJkaWNodGhlaWRcIixcbiAgICAgICAgICAgIGZ5OiBcInR5cGVcIixcbiAgICAgICAgICAgIHI6IDMsXG4gICAgICAgICAgICBmaWxsOiBkID0+IGQuR1dMID09PSBsb2NhdGllXG4gICAgICAgICAgICAgID8gXCIjODg1NmE3XCJcbiAgICAgICAgICAgICAgOiBcIiNiZGJkYmRcIixcbiAgICAgICAgXG4gICAgICAgICAgICB0aXA6IHRydWUsXG4gICAgICAgIFxuICAgICAgICAgICAgdGl0bGU6IGQgPT4ge1xuICAgICAgICAgICAgICBjb25zdCB2ID0gZGljaHRoZWlkX3ZhbHVlcy5nZXQoZC5HV0wpO1xuICAgICAgICBcbiAgICAgICAgICAgICAgcmV0dXJuIFtcbiAgICAgICAgICAgICAgICBkLkdXTCxcbiAgICAgICAgICAgICAgICBcIlwiLFxuICAgICAgICAgICAgICAgIGBCZXN0YWFuZGU6ICR7dltcIkJlc3RhYW5kZSB3b25pbmdlblwiXS50b0xvY2FsZVN0cmluZyhcIm5sLU5MXCIsIHsgICAgIG1heGltdW1GcmFjdGlvbkRpZ2l0czogMCB9KX0gd28vaGFgLFxuICAgICAgICAgICAgICAgIGBOYSBvcGJvdXdlbjogJHt2W1wiTmEgb3Bib3V3ZW5cIl0udG9Mb2NhbGVTdHJpbmcoXCJubC1OTFwiLCB7IG1heGltdW1GcmFjdGlvbkRpZ2l0czogMCB9KX0gd28vaGFgXG4gICAgICAgICAgICAgIF0uam9pbihcIlxcblwiKTtcbiAgICAgICAgICAgIH1cbiAgICAgICAgICB9KVxuICAgICAgICApXG4gICAgICBdXG4gICAgfSl9XG4gICAgPGRpdiBzdHlsZT1cImZvbnQtc2l6ZTogMC42ZW07IGNvbG9yOiAjNjY2OyBtYXJnaW4tdG9wOiA0cHg7IHRleHQtYWxpZ246IHJpZ2h0O1wiPlxuICAgICAgJHtkaWNodGhlaWRfY2FwdGlvbn1cbiAgICA8L2Rpdj5cbiAgPC9kaXY+XG5gXG4ifSx7Im1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJjZWxsTmFtZSI6Im9qcy1jZWxsLTQiLCJpbmxpbmUiOmZhbHNlLCJzb3VyY2UiOiJcbnpvb21fbWFwID0ge1xuICBjb25zdCBiYm94ID0gdHJhbnNwb3NlKGd3bF9ib3VuZHNfb2pzKS5maW5kKFxuICAgIGQgPT4gZC5HV0wgPT09IGxvY2F0aWVcbiAgKTtcblxuICBpZiAoYmJveCkge1xuICAgIGRvY3VtZW50LmRpc3BhdGNoRXZlbnQoXG4gICAgICBuZXcgQ3VzdG9tRXZlbnQoXCJnd2wtbG9jYXRpb24tY2hhbmdlXCIsIHtcbiAgICAgICAgZGV0YWlsOiBbXG4gICAgICAgICAgW2Jib3gueW1pbiwgYmJveC54bWluXSxcbiAgICAgICAgICBbYmJveC55bWF4LCBiYm94LnhtYXhdXG4gICAgICAgIF1cbiAgICAgIH0pXG4gICAgKTtcbiAgfVxuXG4gIHJldHVybiBudWxsO1xufVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJzaGlueUlucHV0KCdsb2NhdGllJykifV19
 </script>
 <script type="module">
 window._ojs.runtime.setLocalResolver({});
