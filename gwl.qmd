@@ -16,12 +16,14 @@ format:
 library(tidyverse)
 library(janitor)
 library(fs)
+library(cbsodataR)
 library(sf)
 library(leaflet)
 library(tidyterra)
 library(terra)
 library(maptiles)
 library(patchwork)
+library(ggbeeswarm)
 
 epsg_wgs_84 <- 4326   # WGS 84
 epsg_web_merc <- 3857 # Web Mercator
@@ -49,6 +51,21 @@ bevolking_pc6 <- read_sf("data/cbs_pc6_2025_v1.gpkg") |>
 cbs500m <- read_sf("data/cbs_vk500_2025_v1.gpkg") |>
   mutate(across(where(is.numeric), \(x) replace_values(x, c(-99997, -99995) ~ NA))) |>
   remove_empty("cols")
+
+stedelijkheid <- cbs_get_data("86247NED") |>
+  select(
+    gemeente_code = Code_1,
+    gemeente = Naam_2,
+    stedelijkheid_code = Code_54,
+    stedelijkheid = Omschrijving_55,
+    inwoners = Inwonertal_56,
+    omgevingsadressendichtheid = Omgevingsadressendichtheid_57
+  ) |>
+  mutate(
+    gemeente = str_trim(gemeente),
+    stedelijkheid = fct_reorder(stedelijkheid, stedelijkheid_code),
+    .keep = "unused"
+  )
 
 # internal 2018 Public Transport Accessibility Level (PTAL) dataset
 ptal <- read_sf("data/ptal2018.gpkg") |>
@@ -500,3 +517,290 @@ basemap +
   ) +
   coords
 ```
+
+## Parking
+
+What are the standing parking requirements in GWL locations?
+Can they be reduced?
+
+```{r}
+#| label: calc-parking-req
+
+gwl_park <- gwl |>
+  left_join(
+    stedelijkheid,
+    by = c("Gemeente" = "gemeente"),
+    relationship = "many-to-one"
+  )
+
+gwl_bevolking <- gwl |>
+  st_join(bevolking_pc6 |> select(aantal_woningen)) |>
+  group_by(GWL) |>
+  summarise(
+    naam = first(GWL),
+    bestaande_woningen = sum(aantal_woningen, na.rm = T),
+    nieuwe_woningen_2030 = first(TOT2030),
+    totaal_verwachte_woningen_2030 = bestaande_woningen + nieuwe_woningen_2030,
+  ) |>
+  mutate(
+    area_ha = as.numeric(st_area(geom)) / 10000,
+    dichtheid_bestaande_wo_per_ha = bestaande_woningen / area_ha,
+    dichtheid_na_opbouwen_wo_per_ha = totaal_verwachte_woningen_2030 / area_ha
+  )
+```
+
+```{r}
+#| label: single-woningen-chart
+#| execute: false
+
+gwl_bevolking |>
+  filter(totaal_verwachte_woningen_2030 < 70000) |>
+  st_drop_geometry() |>
+  select(
+    GWL,
+    bestaande_woningen,
+    nieuwe_woningen_2030,
+    totaal_verwachte_woningen_2030
+  ) |>
+  pivot_longer(
+    cols = -GWL,
+    names_to = "type",
+    values_to = "woningen"
+  ) |>
+  mutate(
+    type = recode(
+      type,
+      bestaande_woningen = "Bestaande woningen",
+      nieuwe_woningen_2030 = "Nieuwe woningen",
+      totaal_verwachte_woningen_2030 = "Totaal in 2030"
+    ),
+    type = factor(
+      type,
+      levels = c(
+        "Totaal in 2030",
+        "Nieuwe woningen",
+        "Bestaande woningen"
+      )
+    ),
+    highlight = GWL == "Alkmaar"
+  ) |>
+  ggplot(aes(x = woningen, y = type)) +
+  geom_quasirandom(
+    aes(color = highlight),
+    orientation = "y",
+    size = 2.5,
+    width = 0.25,
+    alpha = 0.8
+  ) +
+  scale_color_manual(
+    values = c("FALSE" = "grey70", "TRUE" = "#E34A33"),
+    guide = "none"
+  ) +
+  labs(
+    x = "Aantal woningen",
+    y = NULL
+  ) +
+  theme_minimal()
+```
+
+
+```{r}
+#| label: prepare-gwl-tabs
+#| include: false
+
+set.seed(322)
+
+make_map <- function(data) {
+  bbox <- st_bbox(data)
+
+  basemap +
+    geom_sf(data = ptal_gwl, aes(fill = ptal), alpha = 0.7) +
+    geom_sf(data = gwl, fill = NA, linewidth = 0.5) +
+    geom_sf(
+      data = data,
+      fill = NA,
+      color = "black",
+      linewidth = 0.5
+    ) +
+    scale_fill_brewer(
+      name = "PTAL",
+      palette = "YlGnBu",
+      direction = -1
+    ) +
+    coord_sf(
+      xlim = bbox[c("xmin", "xmax")],
+      ylim = bbox[c("ymin", "ymax")]
+    )
+}
+
+# Filter before preparing the graph data
+woning_data_full <- gwl_bevolking |>
+  st_drop_geometry() |>
+  select(
+    GWL,
+    bestaande_woningen,
+    nieuwe_woningen_2030,
+    totaal_verwachte_woningen_2030
+  ) |>
+  pivot_longer(
+    cols = -GWL,
+    names_to = "type",
+    values_to = "woningen"
+  ) |>
+  mutate(
+    type = recode(
+      type,
+      bestaande_woningen = "Bestaande woningen",
+      nieuwe_woningen_2030 = "Nieuwe woningen",
+      totaal_verwachte_woningen_2030 = "Totaal in 2030"
+    ),
+    type = factor(
+      type,
+      levels = c(
+        "Totaal in 2030",
+        "Nieuwe woningen",
+        "Bestaande woningen"
+      )
+    )
+  )
+
+gwl_over_70k <- gwl_bevolking |>
+  filter(totaal_verwachte_woningen_2030 > 70000) |>
+  pull(GWL)
+
+woning_data <- woning_data_full |>
+  filter(!GWL %in% gwl_over_70k)
+
+make_woningen_plot <- function(gwl_name) {
+
+  data <- if (gwl_name %in% gwl_over_70k) {
+    woning_data_full
+  } else {
+    woning_data
+  }
+
+  data |>
+    mutate(highlight = GWL == gwl_name) |>
+    ggplot(aes(x = woningen, y = type)) +
+    geom_quasirandom(
+      aes(color = highlight),
+      orientation = "y",
+      size = 2.5,
+      width = 0.25,
+      alpha = 0.8
+    ) +
+    scale_color_manual(
+      values = c("FALSE" = "grey70", "TRUE" = "#E34A33"),
+      guide = "none"
+    ) +
+    scale_x_continuous(labels = scales::label_comma()) +
+    labs(
+      x = "Aantal woningen",
+      y = NULL
+    ) +
+    theme_minimal()
+}
+
+dichtheid_data_full <- gwl_bevolking |>
+  st_drop_geometry() |>
+  select(
+    GWL,
+    dichtheid_bestaande_wo_per_ha,
+    dichtheid_na_opbouwen_wo_per_ha
+  ) |>
+  pivot_longer(
+    cols = -GWL,
+    names_to = "type",
+    values_to = "dichtheid"
+  ) |>
+  mutate(
+    type = recode(
+      type,
+      dichtheid_bestaande_wo_per_ha = "Bestaande",
+      dichtheid_na_opbouwen_wo_per_ha = "Na opbouwen"
+    ),
+    type = factor(
+      type,
+      levels = c("Na opbouwen", "Bestaande woningen")
+    )
+  )
+
+gwl_over_200 <- gwl_bevolking |>
+  filter(dichtheid_na_opbouwen_wo_per_ha > 200) |>
+  pull(GWL)
+
+dichtheid_data <- dichtheid_data_full |>
+  filter(!GWL %in% gwl_over_200)
+
+make_dichtheid_plot <- function(gwl_name) {
+
+  data <- if (gwl_name %in% gwl_over_200) {
+    dichtheid_data_full
+  } else {
+    dichtheid_data
+  }
+
+  data |>
+    mutate(highlight = GWL == gwl_name) |>
+    ggplot(aes(x = dichtheid, y = type)) +
+    geom_quasirandom(
+      aes(color = highlight),
+      orientation = "y",
+      size = 2.5,
+      width = 0.25,
+      alpha = 0.8
+    ) +
+    scale_color_manual(
+      values = c("FALSE" = "grey70", "TRUE" = "#8856a7"),
+      guide = "none"
+    ) +
+    labs(
+      x = "Dichtheid (woningen per hectare)",
+      y = NULL
+    ) +
+    theme_minimal()
+}
+
+gwl_tabs <- gwl_bevolking |>
+  ungroup() |>
+  nest(.by = GWL) |>
+  mutate(
+    map = map(data, make_map),
+    plot = map(GWL, make_woningen_plot),
+    density_plot = map(GWL, make_dichtheid_plot),
+    figure = pmap(
+      list(map, plot, density_plot),
+      \(map, plot, density_plot) {
+        patchwork::wrap_plots(
+          map,
+          plot,
+          density_plot,
+          ncol = 1,
+          heights = c(1.5, 1, 1)
+        )
+      }
+    ),
+    tab = row_number()
+  )
+
+map_chunks <- gwl_tabs |>
+  mutate(
+    markdown = map2_chr(GWL, tab, \(gwl_name, i) {
+      glue::glue("
+      ### <<gwl_name>>
+
+      ```{r}
+      #| label: gwl-tab-<<i>>
+      #| echo: false
+
+      gwl_tabs$figure[[<<i>>]]
+      ```", .open = "<<", .close = ">>")
+    })
+  )
+```
+
+::: {.panel-tabset}
+
+`r knitr::knit(text = paste(map_chunks$markdown, collapse = "\n\n"))`
+
+:::
