@@ -1,12 +1,20 @@
 ---
 title: "Bereikbaarheid van grootschalige woningbouwlocaties"
-author: "Vereniging Deltametropool"
 date: last-modified
+author:
+  - name: Seamus Joyce-Johnson
+    orcid: 0000-0002-9845-8778
+    affiliation:
+      - name: Vereniging Deltametropool
+        url: https://www.deltametropool.nl
 format:
   html:
+    code-links: repo
     code-fold: true
     lightbox: true
     embed-resources: true
+    execute:
+      echo: false
 ---
 
 ```{r}
@@ -23,7 +31,6 @@ library(tidyterra)
 library(terra)
 library(maptiles)
 library(patchwork)
-library(ggbeeswarm)
 
 epsg_wgs_84 <- 4326   # WGS 84
 epsg_web_merc <- 3857 # Web Mercator
@@ -150,143 +157,6 @@ These grootschalige woningbouwlocaties must have access to jobs and amenities
 by sustainable modes of transport—public transport, bicycle, and foot—
 to ensure that they are both sustainable and livable.
 
-## Cycling
-
-In this analysis, we seek to develop
-a meaningful measure of the **bicycle accessibility**
-of the grootschalige woningbouwlocaties.
-This is a difficult task because of their large-scale nature—as
-these locations are often whole new urban districts
-with associated new street infrastructure, amenities, and even jobs,
-assessments of existing cycling infrastructure give an incomplete picture.
-
-Therefore, we choose to focus our analysis on **job accessibility**,
-as employment opportunities and locations are less likely to change
-with the development of new housing,
-when compared with street infrastructure itself
-or amenities within neighborhoods.
-
-As a rudimentary approach,
-we can consider the number of jobs
-available within cycling distance of the new housing areas
-and make comparisons between them.
-
-A more advanced analysis
-could distribute hypothetical new citizens across these housing areas
-and calculate job accessibility metrics for them on an individual basis.
-
-### Existing jobs within cycling distance
-
-In the Netherlands,
-city planners [typically use](https://www.mrdh.nl/interview/potentie-fiets-woon-werkverkeer)
-7,5 km as the maximum distance cycled to work, with 15 km for e-bikes.
-We can therefore take a 7,5 km buffer around the large-scale housing areas
-as a very rough estimate of the bike-accessible employment area.[^fiets-1]
-
-[^fiets-1]: The actual area is smaller,
-because it would reflect network distance rather than crow-flies distance
-and account for the fact that not all residents live on the edge of the area.
-
-We then count the number of jobs available in these employment areas
-and normalize by the expected number of new households in 2030.
-
-```{r}
-#| label: calc-basic-buffer
-#| cache: true
-
-# constants
-dist_bike <- 7.5 # bike distance in km
-dist_ebike <- 15 # ebike distance in km
-
-# buffer housing areas
-gwl_bike_buffer  <- st_buffer(gwl, dist =  dist_bike * 1000)
-gwl_ebike_buffer <- st_buffer(gwl, dist = dist_ebike * 1000)
-
-# jobs per new resident
-
-jobs <- gwl_bike_buffer |>
-  select(oid, ProjNAAM, TOT2030) |>
-  # first, join jobs data
-  st_join(lisa |> select("BANEN")) |>
-  group_by(oid) |>
-  summarise(
-    ProjNAAM = first(ProjNAAM),
-    TOT2030 = first(TOT2030),
-    banen = sum(BANEN, na.rm = T)
-  ) |>
-  # then, join households data
-  st_join(bevolking_pc6 |> select(aantal_woningen)) |>
-  group_by(oid) |>
-  summarise(
-    ProjNAAM = first(ProjNAAM),
-    nieuwe_woningen_2030 = first(TOT2030),
-    banen = first(banen),
-    bestaande_woningen = sum(aantal_woningen, na.rm = T),
-    banen_per_nieuwe_woning = banen / nieuwe_woningen_2030,
-    banen_per_totaal_woningen = banen / (bestaande_woningen + nieuwe_woningen_2030)
-  )
-```
-
-Then, we can plot these.
-
-:::{.column-page}
-```{r}
-#| label: fig-map-jobs-cycling-distance2
-#| fig-cap: "Banen op < 7,5 km afstand van grootschalige woningbouwlocaties"
-#| fig-subcap:
-#|   - "Banen"
-#|   - "Banen per nieuwe woning (2030)"
-#|   - "Banen per totaal aantal woningen (inclusief bestaande en gepland)"
-#| layout-ncol: 2
-
-jobs_long <- jobs |>
-  pivot_longer(
-    cols = c(
-      banen,
-      banen_per_nieuwe_woning,
-      banen_per_totaal_woningen
-    ),
-    names_to = "group",
-    values_to = "value"
-  ) |>
-  arrange(group, value)
-
-labels <- c(
-  banen = "Banen",
-  banen_per_nieuwe_woning = "Banen per nieuwe\nwoning (2030)",
-  banen_per_totaal_woningen = "Banen per totaal aantal woningen\n(inclusief bestaande en gepland)"
-)
-
-palettes <- c(
-  banen = "viridis",
-  banen_per_nieuwe_woning = "cividis",
-  banen_per_totaal_woningen = "inferno"
-)
-
-make_job_map <- function(data) {
-  group <- unique(data$group)
-
-  ggplot(data) +
-    geom_sf(aes(fill = value), color = NA, alpha = 0.8) +
-    geom_sf(data = nl_border, fill = NA) +
-    scale_fill_viridis_c(
-      option = palettes[[group]],
-      labels = scales::label_number()
-    ) +
-    labs(fill = labels[[group]]) +
-    theme_void()
-}
-
-plots <- jobs_long |>
-  group_split(group) |>
-  map(make_job_map)
-
-plots[[1]]
-plots[[2]]
-plots[[3]]
-```
-:::
-
 ## Public Transport
 
 What about public transport?
@@ -294,15 +164,34 @@ Are the large-scale housing locations accessible by train, bus, tram, and metro?
 Does the accessibility level vary within the housing area?
 Let's take a look using the public transport accesibility level (PTAL) metric.
 
+### PTAL
+
 ```{r}
 #| label: ptal-leaflet
 
-ptal_cbs <- cbs500m |>
+gwl_wgs84 <- gwl |>
+  st_transform(4326)
+
+ptal_cbs_500m <- cbs500m |>
   left_join(ptal |> st_drop_geometry(), by = c("crs28992res500m" = "cbs_cell_i")) |>
   mutate(ptal = ptal |> replace_values(NA ~ "1a"))
 
-ptal_gwl <- ptal_cbs |>
-  st_join(gwl, left = F)
+gwl_cbs_stedelijkheid <- gwl |>
+  left_join(
+    stedelijkheid,
+    by = c("Gemeente" = "gemeente"),
+    relationship = "many-to-one"
+  )
+
+ptal_gwl <- ptal_cbs_500m |>
+  st_join(
+    gwl_cbs_stedelijkheid |> select(-id),
+    left = FALSE,
+    suffix = c("", "_gemeente"),
+  )
+
+ptal_gwl_wgs84 <- ptal_gwl |>
+  st_transform(epsg_wgs_84)
 
 ptal_levels <- levels(ptal$ptal)
 
@@ -325,7 +214,7 @@ leaflet() |>
     )
   ) |>
   addPolygons(
-    data = ptal_gwl |> st_transform(epsg_wgs_84),
+    data = ptal_gwl_wgs84,
     color = ~ ptal_pal(ptal),
     fillColor = ~ ptal_pal(ptal),
     opacity = 0.7,
@@ -333,6 +222,7 @@ leaflet() |>
     weight = 1,
     popup = ~ paste0(
       "<strong>", GWL, "</strong>", ": ", Subproject, "<br>",
+      "CBS stedelijkheid (gemeente): ", stedelijkheid_gemeente, "<br>",
       "Woningen subproject: ", Subcapacit, "<br>",
       "Woningen project: ", Projcapaci, "<br>",
       "Woningen ", GWL, " 2030: ", TOT2030, "<br>",
@@ -340,7 +230,7 @@ leaflet() |>
     )
   ) |>
   addPolygons(
-    data = gwl |> st_transform(epsg_wgs_84),
+    data = gwl_wgs84,
     fill = FALSE,
     color = "black",
     weight = 1,
@@ -351,6 +241,10 @@ leaflet() |>
     colors = ptal_pal(ptal_levels),
     labels = ptal_levels,
     title = "PTAL"
+  ) |>
+  addScaleBar(
+    position = "bottomleft",
+    options = scaleBarOptions(imperial = FALSE)
   )
 ```
 
@@ -480,6 +374,8 @@ The largest are in:
 * Utrecht Rijnenburg
 * Amersfoort A1 Zone
 
+### Housing density
+
 Of course, it may still be worthwhile to build housing
 in public-transport poor areas if either:
 
@@ -495,43 +391,40 @@ while still achieving the same overall target number of units.
 Let's take a location-by-location look.
 
 ```{r}
-#| label: fig-circle-plots-individual
-#| fig-cap: "OV-bereikbaarheid van grootschalige woningbouwlocaties rondom Den Haag"
+#| label: interactive-data-prep
+#| include: false
 
-den_haag_10_km_circle <- circles[1,]
+# ------------------------------------------------------------------------------
+# GWL choices and bounding boxes
+# ------------------------------------------------------------------------------
 
-bbox <- st_bbox(den_haag_10_km_circle)
+gwl_choices <- gwl |>
+  st_drop_geometry() |>
+  distinct(GWL) |>
+  arrange(GWL) |>
+  pull(GWL) |>
+  as.character()
 
-coords <- coord_sf(
-  xlim = bbox[c("xmin", "xmax")],
-  ylim = bbox[c("ymin", "ymax")]
-)
+default_gwl <- if ("Alkmaar" %in% gwl_choices) {
+  "Alkmaar"
+} else {
+  gwl_choices[[1]]
+}
 
-basemap +
-  geom_sf(data = ptal_gwl, aes(fill = ptal), alpha = 0.7) +
-  geom_sf(data = gwl, fill = NA, linewidth = 0.5) +
-  scale_fill_brewer(
-    name = "PTAL",
-    palette = "YlGnBu",
-    direction = -1
-  ) +
-  coords
-```
+gwl_bounds <- gwl_wgs84 |>
+  nest(.by = GWL) |>
+  mutate(
+    bbox = purrr::map(data, st_bbox),
+    xmin = purrr::map_dbl(bbox, \(x) x[["xmin"]]),
+    ymin = purrr::map_dbl(bbox, \(x) x[["ymin"]]),
+    xmax = purrr::map_dbl(bbox, \(x) x[["xmax"]]),
+    ymax = purrr::map_dbl(bbox, \(x) x[["ymax"]])
+  ) |>
+  select(GWL, xmin, ymin, xmax, ymax)
 
-## Parking
-
-What are the standing parking requirements in GWL locations?
-Can they be reduced?
-
-```{r}
-#| label: calc-parking-req
-
-gwl_park <- gwl |>
-  left_join(
-    stedelijkheid,
-    by = c("Gemeente" = "gemeente"),
-    relationship = "many-to-one"
-  )
+# ------------------------------------------------------------------------------
+# Bevolking data
+# ------------------------------------------------------------------------------
 
 gwl_bevolking <- gwl |>
   st_join(bevolking_pc6 |> select(aantal_woningen)) |>
@@ -547,14 +440,12 @@ gwl_bevolking <- gwl |>
     dichtheid_bestaande_wo_per_ha = bestaande_woningen / area_ha,
     dichtheid_na_opbouwen_wo_per_ha = totaal_verwachte_woningen_2030 / area_ha
   )
-```
 
-```{r}
-#| label: single-woningen-chart
-#| execute: false
+# ------------------------------------------------------------------------------
+# Aantal woningen
+# ------------------------------------------------------------------------------
 
-gwl_bevolking |>
-  filter(totaal_verwachte_woningen_2030 < 70000) |>
+woning_data <- gwl_bevolking |>
   st_drop_geometry() |>
   select(
     GWL,
@@ -568,140 +459,26 @@ gwl_bevolking |>
     values_to = "woningen"
   ) |>
   mutate(
+    GWL = as.character(GWL),
     type = recode(
       type,
       bestaande_woningen = "Bestaande woningen",
       nieuwe_woningen_2030 = "Nieuwe woningen",
       totaal_verwachte_woningen_2030 = "Totaal in 2030"
-    ),
-    type = factor(
-      type,
-      levels = c(
-        "Totaal in 2030",
-        "Nieuwe woningen",
-        "Bestaande woningen"
-      )
-    ),
-    highlight = GWL == "Alkmaar"
-  ) |>
-  ggplot(aes(x = woningen, y = type)) +
-  geom_quasirandom(
-    aes(color = highlight),
-    orientation = "y",
-    size = 2.5,
-    width = 0.25,
-    alpha = 0.8
-  ) +
-  scale_color_manual(
-    values = c("FALSE" = "grey70", "TRUE" = "#E34A33"),
-    guide = "none"
-  ) +
-  labs(
-    x = "Aantal woningen",
-    y = NULL
-  ) +
-  theme_minimal()
-```
-
-
-```{r}
-#| label: prepare-gwl-tabs
-#| include: false
-
-set.seed(322)
-
-make_map <- function(data) {
-  bbox <- st_bbox(data)
-
-  basemap +
-    geom_sf(data = ptal_gwl, aes(fill = ptal), alpha = 0.7) +
-    geom_sf(data = gwl, fill = NA, linewidth = 0.5) +
-    geom_sf(
-      data = data,
-      fill = NA,
-      color = "black",
-      linewidth = 0.5
-    ) +
-    scale_fill_brewer(
-      name = "PTAL",
-      palette = "YlGnBu",
-      direction = -1
-    ) +
-    coord_sf(
-      xlim = bbox[c("xmin", "xmax")],
-      ylim = bbox[c("ymin", "ymax")]
     )
-}
-
-# Filter before preparing the graph data
-woning_data_full <- gwl_bevolking |>
-  st_drop_geometry() |>
-  select(
-    GWL,
-    bestaande_woningen,
-    nieuwe_woningen_2030,
-    totaal_verwachte_woningen_2030
   ) |>
-  pivot_longer(
-    cols = -GWL,
-    names_to = "type",
-    values_to = "woningen"
-  ) |>
-  mutate(
-    type = recode(
-      type,
-      bestaande_woningen = "Bestaande woningen",
-      nieuwe_woningen_2030 = "Nieuwe woningen",
-      totaal_verwachte_woningen_2030 = "Totaal in 2030"
-    ),
-    type = factor(
-      type,
-      levels = c(
-        "Totaal in 2030",
-        "Nieuwe woningen",
-        "Bestaande woningen"
-      )
-    )
-  )
+  filter(!is.na(woningen))
 
-gwl_over_70k <- gwl_bevolking |>
+woning_over_70k <- gwl_bevolking |>
   filter(totaal_verwachte_woningen_2030 > 70000) |>
-  pull(GWL)
+  pull(GWL) |>
+  as.character()
 
-woning_data <- woning_data_full |>
-  filter(!GWL %in% gwl_over_70k)
+# ------------------------------------------------------------------------------
+# Woningdichtheid
+# ------------------------------------------------------------------------------
 
-make_woningen_plot <- function(gwl_name) {
-
-  data <- if (gwl_name %in% gwl_over_70k) {
-    woning_data_full
-  } else {
-    woning_data
-  }
-
-  data |>
-    mutate(highlight = GWL == gwl_name) |>
-    ggplot(aes(x = woningen, y = type)) +
-    geom_quasirandom(
-      aes(color = highlight),
-      orientation = "y",
-      size = 2.5,
-      width = 0.25,
-      alpha = 0.8
-    ) +
-    scale_color_manual(
-      values = c("FALSE" = "grey70", "TRUE" = "#E34A33"),
-      guide = "none"
-    ) +
-    scale_x_continuous(labels = scales::label_comma()) +
-    labs(
-      x = "Aantal woningen",
-      y = NULL
-    ) +
-    theme_minimal()
-}
-
-dichtheid_data_full <- gwl_bevolking |>
+dichtheid_data <- gwl_bevolking |>
   st_drop_geometry() |>
   select(
     GWL,
@@ -714,93 +491,397 @@ dichtheid_data_full <- gwl_bevolking |>
     values_to = "dichtheid"
   ) |>
   mutate(
+    GWL = as.character(GWL),
     type = recode(
       type,
-      dichtheid_bestaande_wo_per_ha = "Bestaande",
+      dichtheid_bestaande_wo_per_ha = "Bestaande woningen",
       dichtheid_na_opbouwen_wo_per_ha = "Na opbouwen"
-    ),
-    type = factor(
-      type,
-      levels = c("Na opbouwen", "Bestaande woningen")
     )
-  )
+  ) |>
+  filter(!is.na(dichtheid))
 
-gwl_over_200 <- gwl_bevolking |>
+dichtheid_over_200 <- gwl_bevolking |>
   filter(dichtheid_na_opbouwen_wo_per_ha > 200) |>
-  pull(GWL)
+  pull(GWL) |>
+  as.character()
 
-dichtheid_data <- dichtheid_data_full |>
-  filter(!GWL %in% gwl_over_200)
+# ------------------------------------------------------------------------------
+# Pass data from R to Observable JS
+# ------------------------------------------------------------------------------
 
-make_dichtheid_plot <- function(gwl_name) {
+ojs_define(
+  gwl_choices_ojs = gwl_choices,
+  default_gwl_ojs = default_gwl,
+  gwl_bounds_ojs = gwl_bounds,
+  woning_data_ojs = woning_data,
+  woning_over_70k_ojs = woning_over_70k,
+  dichtheid_data_ojs = dichtheid_data,
+  dichtheid_over_200_ojs = dichtheid_over_200
+)
+```
 
-  data <- if (gwl_name %in% gwl_over_200) {
-    dichtheid_data_full
-  } else {
-    dichtheid_data
+```{ojs}
+//| label: location-input
+//| panel: input
+//| echo: false
+
+viewof locatie = Inputs.select(
+  gwl_choices_ojs,
+  {
+    label: "Locatie:",
+    value: default_gwl_ojs
+  }
+)
+```
+
+```{r}
+#| label: leaflet-zoomed-ptal
+#| echo: false
+
+default_bbox <- gwl_bounds |>
+  filter(GWL == default_gwl)
+
+leaflet(width = "100%", height = 350) |>
+  addTiles(
+    urlTemplate = paste0(
+      "https://service.pdok.nl/kadaster/brt-achtergrondkaart/",
+      "wmts/v2_0/grijs/EPSG:3857/{z}/{x}/{y}.png"
+    ),
+    attribution = paste(
+      'Kaartgegevens: <a href="https://www.kadaster.nl/">',
+      'Kadaster</a> / PDOK'
+    )
+  ) |>
+  addPolygons(
+    data = ptal_gwl_wgs84,
+    color = ~ ptal_pal(ptal),
+    fillColor = ~ ptal_pal(ptal),
+    opacity = 0.7,
+    fillOpacity = 0.7,
+    weight = 1,
+    popup = ~ paste0(
+      "<strong>", GWL, "</strong>", ": ", Subproject, "<br>",
+      "CBS stedelijkheid (gemeente): ", stedelijkheid_gemeente, "<br>",
+      "Woningen subproject: ", Subcapacit, "<br>",
+      "Woningen project: ", Projcapaci, "<br>",
+      "Woningen ", GWL, " 2030: ", TOT2030, "<br>",
+      "Woningen ", GWL, " 2040: ", TOT2040, "<br>"
+    )
+  ) |>
+  addPolygons(
+    data = gwl_wgs84,
+    fill = FALSE,
+    color = "black",
+    weight = 1,
+    opacity = 0.5
+  ) |>
+  addLegend(
+    position = "bottomright",
+    colors = ptal_pal(ptal_levels),
+    labels = ptal_levels,
+    title = "PTAL"
+  ) |>
+  addScaleBar(
+    position = "bottomleft",
+    options = scaleBarOptions(imperial = FALSE)
+  ) |>
+  fitBounds(
+    default_bbox$xmin,
+    default_bbox$ymin,
+    default_bbox$xmax,
+    default_bbox$ymax,
+    options = list(maxZoom = 13, padding = c(10, 10))
+  ) |>
+  htmlwidgets::onRender("
+    function(el, x) {
+      const map = this;
+
+      document.addEventListener('gwl-location-change', function(event) {
+        map.fitBounds(event.detail, {
+          maxZoom: 13,
+          padding: [30, 30]
+        });
+      });
+    }
+  ")
+
+```
+
+```{ojs}
+//| label: woning-plot
+//| echo: false
+
+woning_plot_data = transpose(woning_data_ojs).filter(d =>
+  woning_over_70k_ojs.includes(locatie) ||
+  !woning_over_70k_ojs.includes(d.GWL)
+)
+
+Plot.plot({
+  title: "Woningen",
+  height: 270,
+  marginLeft: 125,
+
+  x: {
+    label: "Aantal woningen",
+    grid: true
+  },
+
+  fy: {
+    domain: [
+      "Bestaande woningen",
+      "Nieuwe woningen",
+      "Totaal in 2030"
+    ],
+    label: null
+  },
+
+  marks: [
+    Plot.dot(
+      woning_plot_data,
+      Plot.dodgeY("middle", {
+        x: "woningen",
+        fy: "type",
+        r: 3,
+        fill: d => d.GWL === locatie
+          ? "#E34A33"
+          : "#bdbdbd",
+        title: d => `${d.GWL}: ${d.woningen.toLocaleString("nl-NL")}`
+      })
+    )
+  ]
+})
+```
+
+```{ojs}
+//| label: dichtheid-plot
+//| echo: false
+
+dichtheid_plot_data = transpose(dichtheid_data_ojs).filter(d =>
+  dichtheid_over_200_ojs.includes(locatie) ||
+  !dichtheid_over_200_ojs.includes(d.GWL)
+)
+
+Plot.plot({
+  title: "Woningdichtheid",
+  height: 200,
+  marginLeft: 125,
+
+  x: {
+    label: "Woningen per hectare",
+    grid: true
+  },
+
+  fy: {
+    domain: [
+      "Bestaande woningen",
+      "Na opbouwen"
+    ],
+    label: null
+  },
+
+  marks: [
+    Plot.dot(
+      dichtheid_plot_data,
+      Plot.dodgeY("middle", {
+        x: "dichtheid",
+        fy: "type",
+        r: 3,
+        fill: d => d.GWL === locatie
+          ? "#8856a7"
+          : "#bdbdbd",
+        title: d => `${d.GWL}: ${d.dichtheid.toFixed(1)} woningen/ha`
+      })
+    )
+  ]
+})
+```
+
+```{ojs}
+//| label: map-zoom
+//| echo: false
+//| output: false
+
+zoom_map = {
+  const bbox = transpose(gwl_bounds_ojs).find(
+    d => d.GWL === locatie
+  );
+
+  if (bbox) {
+    document.dispatchEvent(
+      new CustomEvent("gwl-location-change", {
+        detail: [
+          [bbox.ymin, bbox.xmin],
+          [bbox.ymax, bbox.xmax]
+        ]
+      })
+    );
   }
 
-  data |>
-    mutate(highlight = GWL == gwl_name) |>
-    ggplot(aes(x = dichtheid, y = type)) +
-    geom_quasirandom(
-      aes(color = highlight),
-      orientation = "y",
-      size = 2.5,
-      width = 0.25,
-      alpha = 0.8
-    ) +
-    scale_color_manual(
-      values = c("FALSE" = "grey70", "TRUE" = "#8856a7"),
-      guide = "none"
-    ) +
-    labs(
-      x = "Dichtheid (woningen per hectare)",
-      y = NULL
-    ) +
-    theme_minimal()
+  return null;
 }
+```
 
-gwl_tabs <- gwl_bevolking |>
-  ungroup() |>
-  nest(.by = GWL) |>
-  mutate(
-    map = map(data, make_map),
-    plot = map(GWL, make_woningen_plot),
-    density_plot = map(GWL, make_dichtheid_plot),
-    figure = pmap(
-      list(map, plot, density_plot),
-      \(map, plot, density_plot) {
-        patchwork::wrap_plots(
-          map,
-          plot,
-          density_plot,
-          ncol = 1,
-          heights = c(1.5, 1, 1)
-        )
-      }
-    ),
-    tab = row_number()
-  )
+<!-- TODO
 
-map_chunks <- gwl_tabs |>
-  mutate(
-    markdown = map2_chr(GWL, tab, \(gwl_name, i) {
-      glue::glue("
-      ### <<gwl_name>>
+## Parking
 
-      ```{r}
-      #| label: gwl-tab-<<i>>
-      #| echo: false
+What are the standing parking requirements in GWL locations?
+Can they be reduced?
 
-      gwl_tabs$figure[[<<i>>]]
-      ```", .open = "<<", .close = ">>")
-    })
+-->
+
+## Cycling
+
+In this analysis, we seek to develop
+a meaningful measure of the **bicycle accessibility**
+of the grootschalige woningbouwlocaties.
+This is a difficult task because of their large-scale nature—as
+these locations are often whole new urban districts
+with associated new street infrastructure, amenities, and even jobs,
+assessments of existing cycling infrastructure give an incomplete picture.
+
+Therefore, we choose to focus our analysis on **job accessibility**,
+as employment opportunities and locations are less likely to change
+with the development of new housing,
+when compared with street infrastructure itself
+or amenities within neighborhoods.
+
+As a rudimentary approach,
+we can consider the number of jobs
+available within cycling distance of the new housing areas
+and make comparisons between them.
+
+A more advanced analysis
+could distribute hypothetical new citizens across these housing areas
+and calculate job accessibility metrics for them on an individual basis.
+
+### Existing jobs within cycling distance
+
+City planners
+[typically use](https://www.mrdh.nl/interview/potentie-fiets-woon-werkverkeer)
+7,5 km as the maximum distance cycled to work in the Netherlands,
+with 15 km for e-bikes.
+We can therefore take a 7,5 km buffer around the large-scale housing areas
+as a very rough estimate of the bike-accessible employment area.[^fiets-1]
+
+[^fiets-1]: The actual area is smaller,
+because it would reflect network distance rather than crow-flies distance
+and account for the fact that not all residents live on the edge of the area.
+
+We then count the number of jobs available in these employment areas
+and normalize by the expected number of new households in 2030.
+
+```{r}
+#| label: calc-basic-buffer
+#| cache: true
+
+# constants
+dist_bike <- 7.5 # bike distance in km
+dist_ebike <- 15 # ebike distance in km
+
+# buffer housing areas
+gwl_bike_buffer  <- st_buffer(gwl, dist =  dist_bike * 1000)
+gwl_ebike_buffer <- st_buffer(gwl, dist = dist_ebike * 1000)
+
+# jobs per new resident
+
+jobs <- gwl_bike_buffer |>
+  select(oid, ProjNAAM, TOT2030) |>
+  # first, join jobs data
+  st_join(lisa |> select("BANEN")) |>
+  group_by(oid) |>
+  summarise(
+    ProjNAAM = first(ProjNAAM),
+    TOT2030 = first(TOT2030),
+    banen = sum(BANEN, na.rm = T)
+  ) |>
+  # then, join households data
+  st_join(bevolking_pc6 |> select(aantal_woningen)) |>
+  group_by(oid) |>
+  summarise(
+    ProjNAAM = first(ProjNAAM),
+    nieuwe_woningen_2030 = first(TOT2030),
+    banen = first(banen),
+    bestaande_woningen = sum(aantal_woningen, na.rm = T),
+    banen_per_nieuwe_woning = banen / nieuwe_woningen_2030,
+    banen_per_totaal_woningen = banen / (bestaande_woningen + nieuwe_woningen_2030)
   )
 ```
 
+Then, we can plot these.
+
+```{r}
+#| label: map-jobs-cycling-distance
+
+jobs_long <- jobs |>
+  pivot_longer(
+    cols = c(
+      banen,
+      banen_per_nieuwe_woning,
+      banen_per_totaal_woningen
+    ),
+    names_to = "group",
+    values_to = "value"
+  ) |>
+  arrange(group, value)
+
+labels <- c(
+  banen = "Banen",
+  banen_per_nieuwe_woning = "Banen per nieuwe\nwoning (2030)",
+  banen_per_totaal_woningen = "Banen per totaal aantal woningen\n(inclusief bestaande en gepland)"
+)
+
+palettes <- c(
+  banen = "viridis",
+  banen_per_nieuwe_woning = "cividis",
+  banen_per_totaal_woningen = "inferno"
+)
+
+make_job_map <- function(data) {
+  group <- unique(data$group)
+
+  ggplot(data) +
+    geom_sf(aes(fill = value), color = NA, alpha = 0.8) +
+    geom_sf(data = nl_border, fill = NA) +
+    scale_fill_viridis_c(
+      option = palettes[[group]],
+      labels = scales::label_number()
+    ) +
+    labs(fill = labels[[group]]) +
+    theme_void()
+}
+
+plots <- jobs_long |>
+  group_split(group) |>
+  map(make_job_map)
+```
+
+::: {#fig-map-jobs-cycling-distance}
+
 ::: {.panel-tabset}
 
-`r knitr::knit(text = paste(map_chunks$markdown, collapse = "\n\n"))`
+#### Banen
 
+```{r}
+#| echo: false
+plots[[1]]
+```
+
+#### Banen per nieuwe woning
+
+```{r}
+#| echo: false
+plots[[2]]
+```
+
+#### Banen per totaal geplande woningen
+
+```{r}
+#| echo: false
+plots[[3]]
+```
+
+:::
+
+Banen op < 7,5 km afstand van grootschalige woningbouwlocaties
 :::
