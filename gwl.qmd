@@ -253,6 +253,7 @@ leaflet() |>
 #| fig-cap: "OV-bereikbaarheid (PTAL) van grootschalige woningbouwlocaties"
 #| fig-width: 16
 #| fig-height: 10
+#| cache: true
 
 # 1. Get Kadaster BRT basemap tiles from PDOK ----------------------------------
 brt <- create_provider(
@@ -616,40 +617,87 @@ woning_plot_data = transpose(woning_data_ojs).filter(d =>
   !woning_over_70k_ojs.includes(d.GWL)
 )
 
-Plot.plot({
-  title: "Woningen",
-  height: 270,
-  marginLeft: 125,
+woning_caption = {
+  const excluded = woning_over_70k_ojs.includes(locatie)
+    ? []
+    : transpose(woning_data_ojs)
+        .filter(d => d.type === "Totaal in 2030" && d.woningen > 70000)
+        .map(d => d.GWL)
+        .sort();
 
-  x: {
-    label: "Aantal woningen",
-    grid: true
-  },
+  return excluded.length
+    ? `Not shown: ${excluded.join(", ")}`
+    : "";
+}
 
-  fy: {
-    domain: [
-      "Bestaande woningen",
-      "Nieuwe woningen",
-      "Totaal in 2030"
-    ],
-    label: null
-  },
+woning_values = {
+  const values = new Map();
 
-  marks: [
-    Plot.dot(
-      woning_plot_data,
-      Plot.dodgeY("middle", {
-        x: "woningen",
-        fy: "type",
-        r: 3,
-        fill: d => d.GWL === locatie
-          ? "#E34A33"
-          : "#bdbdbd",
-        title: d => `${d.GWL}: ${d.woningen.toLocaleString("nl-NL")}`
-      })
-    )
-  ]
-})
+  for (const d of transpose(woning_data_ojs)) {
+    if (!values.has(d.GWL)) {
+      values.set(d.GWL, {});
+    }
+
+    values.get(d.GWL)[d.type] = d.woningen;
+  }
+
+  return values;
+}
+
+html`
+  <div>
+    ${Plot.plot({
+      title: "Woningen",
+      height: 270,
+      marginLeft: 125,
+    
+      x: {
+        label: "Aantal woningen",
+        grid: true
+      },
+    
+      fy: {
+        domain: [
+          "Bestaande woningen",
+          "Nieuwe woningen",
+          "Totaal in 2030"
+        ],
+        label: null
+      },
+    
+      marks: [
+        Plot.dot(
+          woning_plot_data,
+          Plot.dodgeY("middle", {
+            x: "woningen",
+            fy: "type",
+            r: 3,
+            fill: d => d.GWL === locatie
+              ? "#E34A33"
+              : "#bdbdbd",
+        
+            tip: true,
+        
+            title: d => {
+              const v = woning_values.get(d.GWL);
+        
+              return [
+                d.GWL,
+                "",
+                `Bestaande woningen: ${v["Bestaande woningen"].toLocaleString("nl-NL")}`,
+                `Nieuwe woningen: ${v["Nieuwe woningen"].toLocaleString("nl-NL")}`,
+                `Totaal in 2030: ${v["Totaal in 2030"].toLocaleString("nl-NL")}`
+              ].join("\n");
+            }
+          })
+        )
+      ]
+    })}
+    <div style="font-size: 0.6em; color: #666; margin-top: 4px; text-align: right;">
+      ${woning_caption}
+    </div>
+  </div>
+`
 ```
 
 ```{ojs}
@@ -661,39 +709,85 @@ dichtheid_plot_data = transpose(dichtheid_data_ojs).filter(d =>
   !dichtheid_over_200_ojs.includes(d.GWL)
 )
 
-Plot.plot({
-  title: "Woningdichtheid",
-  height: 200,
-  marginLeft: 125,
+dichtheid_caption = {
+  const excluded = dichtheid_over_200_ojs.includes(locatie)
+    ? []
+    : transpose(dichtheid_data_ojs)
+        .filter(d => d.type === "Na opbouwen" && d.dichtheid > 200)
+        .map(d => d.GWL)
+        .sort();
 
-  x: {
-    label: "Woningen per hectare",
-    grid: true
-  },
+  return excluded.length
+    ? `Not shown: ${excluded.join(", ")}`
+    : "";
+}
 
-  fy: {
-    domain: [
-      "Bestaande woningen",
-      "Na opbouwen"
-    ],
-    label: null
-  },
+dichtheid_values = {
+  const values = new Map();
 
-  marks: [
-    Plot.dot(
-      dichtheid_plot_data,
-      Plot.dodgeY("middle", {
-        x: "dichtheid",
-        fy: "type",
-        r: 3,
-        fill: d => d.GWL === locatie
-          ? "#8856a7"
-          : "#bdbdbd",
-        title: d => `${d.GWL}: ${d.dichtheid.toFixed(1)} woningen/ha`
-      })
-    )
-  ]
-})
+  for (const d of transpose(dichtheid_data_ojs)) {
+    if (!values.has(d.GWL)) {
+      values.set(d.GWL, {});
+    }
+
+    values.get(d.GWL)[d.type] = d.dichtheid;
+  }
+
+  return values;
+}
+
+html`
+  <div>
+    ${Plot.plot({
+      title: "Woningdichtheid",
+      height: 200,
+      marginLeft: 125,
+    
+      x: {
+        label: "Woningen per hectare",
+        grid: true
+      },
+    
+      fy: {
+        domain: [
+          "Bestaande woningen",
+          "Na opbouwen"
+        ],
+        label: null
+      },
+    
+      marks: [
+        Plot.dot(
+          dichtheid_plot_data,
+          Plot.dodgeY("middle", {
+            x: "dichtheid",
+            fy: "type",
+            r: 3,
+            fill: d => d.GWL === locatie
+              ? "#8856a7"
+              : "#bdbdbd",
+        
+            tip: true,
+        
+            title: d => {
+              const v = dichtheid_values.get(d.GWL);
+        
+              return [
+                d.GWL,
+                "",
+                `Bestaande: ${v["Bestaande woningen"].toLocaleString("nl-NL", {     maximumFractionDigits: 0 })} wo/ha`,
+                `Na opbouwen: ${v["Na opbouwen"].toLocaleString("nl-NL", { maximumFractionDigits: 0 })} wo/ha`
+              ].join("\n");
+            }
+          })
+        )
+      ]
+    })}
+    <div style="font-size: 0.6em; color: #666; margin-top: 4px; text-align: right;">
+      ${dichtheid_caption}
+    </div>
+  </div>
+`
 ```
 
 ```{ojs}
