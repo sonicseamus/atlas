@@ -54,3 +54,5 @@ rsconnect/
 data/
 *_files/
 output/
+/.quarto/
+/_site/
