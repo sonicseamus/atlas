@@ -12,6 +12,8 @@ format:
     code-links: repo
     code-fold: true
     lightbox: true
+    toc: true
+    toc-expand: 2
     embed-resources: true
     execute:
       echo: false
@@ -170,7 +172,7 @@ Let's take a look using the public transport accesibility level (PTAL) metric.
 #| label: ptal-leaflet
 
 gwl_wgs84 <- gwl |>
-  st_transform(4326)
+  st_transform(epsg_wgs_84)
 
 ptal_cbs_500m <- cbs500m |>
   left_join(ptal |> st_drop_geometry(), by = c("crs28992res500m" = "cbs_cell_i")) |>
