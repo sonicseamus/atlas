@@ -9,6 +9,7 @@ author:
         url: https://www.deltametropool.nl
 format:
   html:
+    output-file: "index"
     code-links: repo
     code-fold: true
     lightbox: true
